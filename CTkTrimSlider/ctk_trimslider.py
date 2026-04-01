@@ -32,10 +32,12 @@ class CTkTrimSlider(CTkBaseClass):
                inner_btn_hover_color: str | tuple[str] | None = None, 
                
                outer_btn_corner_radius: int | None = None,
+               outer_btn_border_width: int | None = None,
                outer_btn_width: int | None = None,
                outer_btn_height: int | None = None,
                
                inner_btn_corner_radius: int | None = None,
+               inner_btn_border_width: int | None = None,
                inner_btn_width: int | None = None,
                inner_btn_height: int | None = None,
                
@@ -45,7 +47,7 @@ class CTkTrimSlider(CTkBaseClass):
                
                from_: int = 0,
                to: int = 1,
-               number_of_steps: int | None = None,
+               number_of_steps: int = 100,
                state: str = "normal",
                hover: bool = True,
                orientation: str = "horizontal",
@@ -78,7 +80,52 @@ class CTkTrimSlider(CTkBaseClass):
     # slider bar vlaues
     self._from_: int = from_
     self._to: int = to
-    self._number_of_steps = number_of_steps
+    self._number_of_steps: int = number_of_steps
+
+    # left trim button for changing video start time
+    self._lslider_btn = TrimSliderButton(self, 
+                                         width=outer_btn_width, 
+                                         height=outer_btn_height,
+                                         corner_radius=outer_btn_corner_radius,
+                                         border_width=outer_btn_border_width,
+                                         fg_color=outer_btn_color,
+                                         hover_color=outer_btn_hover_color,
+                                         value=to,
+                                         state=state,
+                                         hover=hover,
+                                         orientation=orientation,
+                                         command=lb_command)
+
+    # right trim button for changing video end time
+    self._rslider_btn = TrimSliderButton(self, 
+                                         width=outer_btn_width, 
+                                         height=outer_btn_height,
+                                         corner_radius=outer_btn_corner_radius,
+                                         border_width=outer_btn_border_width,
+                                         fg_color=outer_btn_color,
+                                         hover_color=outer_btn_hover_color,
+                                         value=from_,
+                                         state=state,
+                                         hover=hover,
+                                         orientation=orientation,
+                                         command=rb_command)
+
+    mb_offset = 1 + (to / number_of_steps)                               
+
+    # middle seek button to  seek specific times inbetween the start and end times
+    self._mslider_btn = TrimSliderButton(self, 
+                                         width=inner_btn_width, 
+                                         height=inner_btn_height,
+                                         corner_radius=inner_btn_corner_radius,
+                                         border_width=inner_btn_border_width,
+                                         fg_color=inner_btn_color,
+                                         hover_color=inner_btn_hover_color,
+                                         shape="circular",
+                                         value=mb_offset,
+                                         state=state,
+                                         hover=hover,
+                                         orientation=orientation,
+                                         command=mb_command)
   
 class TrimSliderButton(CTkBaseClass):
   def __init__(self,
@@ -95,6 +142,7 @@ class TrimSliderButton(CTkBaseClass):
                border_color: str | tuple[str] = "Transparent",
                hover_color: str | tuple[str] | None = None,
                
+               value: int | float | None = None, 
                state: str = "normal",
                hover: bool = True,
                orientation: str = "horizontal",
