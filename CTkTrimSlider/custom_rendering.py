@@ -77,5 +77,12 @@ class CustomDrawEngine:
     
     # restrict outer_button_corner_radius if too large
     if outer_button_corner_radius > outer_button_width / 2 or outer_button_corner_radius > outer_button_width / 2:  
-      outer_button_corner_radius = min(width / 2, height / 2)
+      outer_button_corner_radius = min(outer_button_width / 2, outer_button_height / 2)
     
+    # restrict inner_button_corner_radius if too large
+    if inner_button_corner_radius > inner_button_width / 2 or inner_button_corner_radius > inner_button_width / 2:  
+      inner_button_corner_radius = min(inner_button_width / 2, inner_button_height / 2)
+    
+    corner_radius = self.__calc_optimal_corner_radius(corner_radius)
+    outer_button_corner_radius = self.__calc_optimal_corner_radius(outer_button_corner_radius)
+    inner_button_corner_radius = self.__calc_optimal_corner_radius(inner_button_corner_radius)
