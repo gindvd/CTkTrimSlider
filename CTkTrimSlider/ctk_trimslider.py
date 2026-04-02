@@ -100,7 +100,6 @@ class CTkTrimSlider(CTkBaseClass):
                                          width=outer_btn_width, 
                                          height=outer_btn_height,
                                          corner_radius=outer_btn_corner_radius,
-                                         border_width=outer_btn_border_width,
                                          fg_color=outer_btn_color,
                                          hover_color=outer_btn_hover_color,
                                          value=to,
@@ -114,7 +113,6 @@ class CTkTrimSlider(CTkBaseClass):
                                          width=outer_btn_width, 
                                          height=outer_btn_height,
                                          corner_radius=outer_btn_corner_radius,
-                                         border_width=outer_btn_border_width,
                                          fg_color=outer_btn_color,
                                          hover_color=outer_btn_hover_color,
                                          value=from_,
@@ -130,7 +128,6 @@ class CTkTrimSlider(CTkBaseClass):
                                          width=inner_btn_width, 
                                          height=inner_btn_height,
                                          corner_radius=inner_btn_corner_radius,
-                                         border_width=inner_btn_border_width,
                                          fg_color=inner_btn_color,
                                          hover_color=inner_btn_hover_color,
                                          shape="circular",
@@ -171,14 +168,12 @@ class CTkTrimSlider(CTkBaseClass):
                                                                                                 self._apply_widget_scaling(self._lslider_btn._desired_width),
                                                                                                 self._apply_widget_scaling(self._lslider_btn._desired_height),
                                                                                                 self._apply_widget_scaling(self._lslider_btn._button_corner_radius),
-                                                                                                self._apply_widget_scaling(self._lslider_btn._button_border_width),
-                                                                                                
+                                                                                                                                                                                                
                                                                                                 # center button values
                                                                                                 self._apply_widget_scaling(self._mslider_btn._desired_width),
                                                                                                 self._apply_widget_scaling(self._mslider_btn._desired_height),
                                                                                                 self._apply_widget_scaling(self._mslider_btn._button_corner_radius),
-                                                                                                self._apply_widget_scaling(self._mslider_btn._button_border_width),
-                                                                                                
+                                                                                                                                                                                                
                                                                                                 # button locations
                                                                                                 self._lsliber_button._value,
                                                                                                 self._rslider_btn._value,
@@ -191,13 +186,11 @@ class TrimSliderButton(CTkBaseClass):
                width: int | None = None,
                height: int | None = None,
                corner_radius: int | None = None,
-               border_width: int | None = None,
-
+               
                shape: str = "rectangular",
 
                bg_color: str | tuple[str] = "Transparent",
                fg_color: str | tuple[str] | None = None,
-               border_color: str | tuple[str] = "Transparent",
                hover_color: str | tuple[str] | None = None,
 
                value: int | float | None = None, 
@@ -240,10 +233,8 @@ class TrimSliderButton(CTkBaseClass):
     # use color themes for CTkButton
     self._fg_color: str | tuple[str] = ThemeManager.theme["CTkButton"]["fg_color"] if fg_color is None else self._check_color_type(fg_color, transparency=True)
     self._hover_color: str | tuple[str] = ThemeManager.theme["CTkButton"]["hover_color"] if hover_color is None else self._check_color_type(hover_color)
-    self._border_color: str | tuple[str] = ThemeManager.theme["CTkButton"]["border_color"] if border_color is None else self._check_color_type(border_color, transparency=True)
-
+    
     # use shape themes for CTkButton
     self._button_corner_radius: int = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if button_corner_radius is None else button_corner_radius
-    self._button_border_width: int = ThemeManager.theme["CTkButton"]["border_width"] if border_width is None else border_width
-
+   
     self._value = value
