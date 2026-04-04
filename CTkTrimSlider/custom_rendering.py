@@ -15,9 +15,6 @@ class CustomDrawEngine(DrawEngine):
   -----|=====•=====|----
   """
 
-  # Use circle_shapes on macOS to avoid rectangular slider heads, font_shapes elsewhere
-  preferred_drawing_method: str = "font_shapes"
-
   def __init__(self, canvas: CTkCanvas) -> None:
     super().__init__(canvas)
     
@@ -74,11 +71,10 @@ class CustomDrawEngine(DrawEngine):
     else:
       inner_corner_radius = 0
     
-    if self.preferred_drawing_method == "font_shapes":
-      return self.__draw_rounded_slider_with_border_and_3_buttons_font_shapes(width, height, corner_radius, border_width, inner_corner_radius,
-                                                                              outer_button_width, outer_button_height, outer_button_corner_radius,
-                                                                              center_button_width, center_button_corner_radius,
-                                                                              lbutton_value, rbutton_value, mbutton_value, orientation)
+    return self.__draw_rounded_slider_with_border_and_3_buttons_font_shapes(width, height, corner_radius, border_width, inner_corner_radius,
+                                                                            outer_button_width, outer_button_height, outer_button_corner_radius,
+                                                                            center_button_width, center_button_corner_radius,
+                                                                            lbutton_value, rbutton_value, mbutton_value, orientation)
     
   def __draw_rounded_slider_with_border_and_3_buttons_font_shapes(self,
                                                     width: int | float,
