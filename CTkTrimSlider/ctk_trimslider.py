@@ -76,9 +76,30 @@ class CTkTrimSlider(CTkBaseClass):
         height = 500
       else:
         height = 20
+
+    # outer button shape parameters
+    # set default dimensions according to orientation
+    if outer_button_width is None:
+      if orientation.lower() == "vertical":
+        outer_button_width = 36
+      else:
+        outer_button_width = 10
+
+    if outer_button_height is None:
+      if orientation.lower() == "vertical":
+       outer_button_height = 10
+      else:
+        outer_button_height = 36
+    
     
     # transfer basic functionality (bg_color, size, _appearance_mode, scaling) to CTkBaseClass
-    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
+    if orientation == "vertical":
+      super().__init__(master=master, bg_color=bg_color, width=outer_button_width, height=height + outer_button_height, **kwargs)
+    else:
+      super().__init__(master=master, bg_color=bg_color, width=width + outer_button_width, height=outer_button_height, **kwargs)
+
+    self._width: int = width
+    self._height: int = height
 
     # color
     self._border_color = self._check_color_type(border_color, transparency=True)
@@ -96,19 +117,6 @@ class CTkTrimSlider(CTkBaseClass):
     self._center_button_corner_radius = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if center_button_corner_radius is None else center_button_corner_radius
     self._center_button_length = ThemeManager.theme["CTkSlider"]["button_length"] if center_button_length is None else center_button_length
     
-    # outer button shape parameters
-    # set default dimensions according to orientation
-    if outer_button_width is None:
-      if orientation.lower() == "vertical":
-        outer_button_width = 48
-      else:
-        outer_button_width = 12
-
-    if outer_button_height is None:
-      if orientation.lower() == "vertical":
-       outer_button_height = 12
-      else:
-        outer_button_height = 48
     
     self._outer_button_width =  outer_button_width
     self._outer_button_height =  outer_button_height
@@ -131,8 +139,8 @@ class CTkTrimSlider(CTkBaseClass):
 
     self._canvas = CTkCanvas(master=self,
                              highlightthickness=0,
-                             width=self._apply_widget_scaling(self._desired_width),
-                             height=self._apply_widget_scaling(self._desired_height))
+                             width=self._apply_widget_scaling(self._current_width),
+                             height=self._apply_widget_scaling(self._current_height))
     
     self._canvas.grid(column=0, row=0, rowspan=1, columnspan=1, sticky="nswe")
 
@@ -164,8 +172,8 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       orientation = "w"
 
-    requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(self._apply_widget_scaling(self._desired_width),
-                                                                                                self._apply_widget_scaling(self._desired_height),
+    requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(self._apply_widget_scaling(self._width),
+                                                                                                self._apply_widget_scaling(self._height),
                                                                                                 self._apply_widget_scaling(self._corner_radius),
                                                                                                 self._apply_widget_scaling(self._border_width),
                                                                                                 
