@@ -210,3 +210,12 @@ class CTkTrimSlider(CTkBaseClass):
                                 fill=self._apply_appearance_mode(self._button_color),
                                 outline=self._apply_appearance_mode(self._button_color))
 
+      if (self._hover_state and self._hover) is True:
+        self._canvas.itemconfig("right_button_parts",
+                                fill=self._apply_appearance_mode(self._button_hover_color),
+                                outline=self._apply_appearance_mode(self._button_hover_color))
+      else:
+        self._canvas.itemconfig("right_button_parts",
+                                fill=self._apply_appearance_mode(self._button_color),
+                                outline=self._apply_appearance_mode(self._button_color))
+
