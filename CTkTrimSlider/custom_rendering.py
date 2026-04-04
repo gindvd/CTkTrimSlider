@@ -1,5 +1,7 @@
 import tkinter
 
+import math
+
 from customtkinter.windows.widgets.core_rendering import DrawEngine
 from customtkinter.windows.widgets.core_rendering import CTkCanvas
 
@@ -49,18 +51,33 @@ class CustomDrawEngine(DrawEngine):
     if corner_radius > width / 2 or corner_radius > height / 2:  
       corner_radius = min(width / 2, height / 2)
     
-    # restrict outer_outer_button_corner_radius if too large
+    # restrict outer_button_corner_radius if too large
     if outer_button_corner_radius > outer_button_width / 2 or outer_button_corner_radius > outer_button_width / 2:  
       outer_button_corner_radius = min(outer_button_width / 2, outer_button_height / 2)
     
-    # restrict center_outer_button_corner_radius if too large
-    if center_outer_button_corner_radius > center_outer_button_width / 2 or center_button_corner_radius > center_button_width / 2:  
-      center_outer_button_corner_radius = min(center_button_width / 2, center_button_height / 2)
+    # restrict center_button_corner_radius if too large
+    if center_button_corner_radius > center_button_width / 2:  
+      center_button_corner_radius = center_button_width / 2
+
+    outer_button_width = round(outer_button_width)
+    outer_button_height = round(outer_button_height)
+    center_button_width = round(center_button_width)
+
+    border_width = round(border_width)
+
+    outer_button_corner_radius = round(outer_button_corner_radius)
+    center_button_corner_radius = round(center_button_corner_radius)
+    corner_radius = self.__calc_optimal_corner_radius(corner_radius)  # optimize corner_radius for different drawing methods (different rounding)
+
+    if corner_radius >= border_width:
+      inner_corner_radius = corner_radius - border_width
+    else:
+      inner_corner_radius = 0
     
     if self.preferred_drawing_method == "font_shapes":
-      return self.__draw_rounded_slider_with_border_and_3_buttons_font_shapes(width, height, corner_radius, border_width,
+      return self.__draw_rounded_slider_with_border_and_3_buttons_font_shapes(width, height, corner_radius, border_width, inner_corner_radius,
                                                                               outer_button_width, outer_button_height, outer_button_corner_radius,
-                                                                              center_outer_button_width, center_button_corner_radius,
+                                                                              center_button_width, center_button_corner_radius,
                                                                               lbutton_value, rbutton_value, mbutton_value, orientation)
     
   def __draw_rounded_slider_with_border_and_3_buttons_font_shapes(self,
@@ -68,6 +85,7 @@ class CustomDrawEngine(DrawEngine):
                                                     height: int | float,
                                                     corner_radius: int | float,
                                                     border_width: int | float,
+                                                    inner_corner_radius: int | float,
                                                     
                                                     outer_button_width: int | float,
                                                     outer_button_height: int | float,
@@ -128,7 +146,7 @@ class CustomDrawEngine(DrawEngine):
     if not self._canvas.find_withtag("buttom_rectangle_2") and height > 2 * outer_button_corner_radius:
       self._canvas.create_rectangle(0, 0, 0, 0, tags=("buttom_rectangle_2", "buttom_rectangle_part", "buttom_parts", "left_buttom_parts"), width=0)
       requires_recoloring = True
-      
+
     elif self._canvas.find_withtag("buttom_rectangle_2") and not height > 2 * outer_button_corner_radius:
       self._canvas.delete("buttom_rectangle_2")
       
@@ -154,7 +172,7 @@ class CustomDrawEngine(DrawEngine):
 
     # draws button on vertical progress bar
     elif orientation == "s":
-      left_button_y_position = corner_radius + (outer_button_width / 2) + (height - 2 * corner_radius - outer_button_width) * (1 - slbutton_value)
+      left_button_y_position = corner_radius + (outer_button_width / 2) + (height - 2 * corner_radius - outer_button_width) * (1 - lbutton_value)
       self._canvas.coords("button_oval_1_a", outer_button_corner_radius, left_button_y_position - (outer_button_width / 2), outer_button_corner_radius)
       self._canvas.coords("button_oval_1_b", outer_button_corner_radius, left_button_y_position - (outer_button_width / 2), outer_button_corner_radius)
       self._canvas.coords("button_oval_2_a", outer_button_corner_radius, left_button_y_position + (outer_button_width / 2), outer_button_corner_radius)
