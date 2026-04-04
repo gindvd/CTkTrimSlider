@@ -19,7 +19,7 @@ class CustomDrawEngine(DrawEngine):
   preferred_drawing_method: str = "font_shapes"
 
   def __init__(self, canvas: CTkCanvas) -> None:
-    super.__init__(canvas)
+    super().__init__(canvas)
     
   # function to start drawing slider bar and 3 buttons onto a canvas widget
   def draw_rounded_slider_with_border_and_3_buttons(self,
@@ -67,7 +67,7 @@ class CustomDrawEngine(DrawEngine):
 
     outer_button_corner_radius = round(outer_button_corner_radius)
     center_button_corner_radius = round(center_button_corner_radius)
-    corner_radius = self.__calc_optimal_corner_radius(corner_radius)  # optimize corner_radius for different drawing methods (different rounding)
+    corner_radius = self._DrawEngine__calc_optimal_corner_radius(corner_radius)  # optimize corner_radius for different drawing methods (different rounding)
 
     if corner_radius >= border_width:
       inner_corner_radius = corner_radius - border_width
@@ -101,7 +101,7 @@ class CustomDrawEngine(DrawEngine):
                                                     orientation: str) -> bool:
     
     # draw normal progressbar
-    requires_recoloring = self.__draw_rounded_progress_bar_with_border_font_shapes(width, height, corner_radius, border_width, inner_corner_radius,
+    requires_recoloring = self._DrawEngine__draw_rounded_progress_bar_with_border_font_shapes(width, height, corner_radius, border_width, inner_corner_radius,
                                                                                        lbutton_value, rbutton_value, orientation)
   
     # create the left slider button as a rectangle with round corners

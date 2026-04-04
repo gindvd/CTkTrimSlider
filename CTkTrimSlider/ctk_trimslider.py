@@ -44,9 +44,9 @@ class CTkTrimSlider(CTkBaseClass):
                center_button_length: int | None = None,
                center_button_corner_radius: int | None = None,
                
-               bg_color: str | tuple[str] = "Transparent",
+               bg_color: str | tuple[str] = "transparent",
                fg_color: str | tuple[str] | None = None,
-               border_color: str | tuple[str] = "Transparent",
+               border_color: str | tuple[str] = "transparent",
                progress_color: str | tuple[str] | None = None,
                button_color: str | tuple[str] | None = None,
                button_hover_color: str | tuple[str] | None = None,
