@@ -140,7 +140,7 @@ class CustomDrawEngine(DrawEngine):
       self._canvas.create_rectangle(0, 0, 0, 0, tags=("buttom_rectangle_1", "buttom_rectangle_part", "buttom_parts", "left_buttom_parts"), width=0)
       requires_recoloring = True
 
-    elif self._canvas.find_withtag("slider елдер_1") and not outer_button_width > 0:
+    elif self._canvas.find_withtag("slider_rectangle_1") and not outer_button_width > 0:
       self._canvas.delete("buttom_rectangle_1")
 
     if not self._canvas.find_withtag("buttom_rectangle_2") and height > 2 * outer_button_corner_radius:
