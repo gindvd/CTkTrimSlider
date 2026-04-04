@@ -136,7 +136,7 @@ class CTkTrimSlider(CTkBaseClass):
     
     self._canvas.grid(column=0, row=0, rowspan=1, columnspan=1, sticky="nswe")
 
-    self._draw_engine = CustomDrawEngine(CTkCanvas)
+    self._draw_engine = CustomDrawEngine(self._canvas)
     self._draw()
   
   def _draw(self, no_color_updates: bool=False) -> None:
