@@ -112,7 +112,7 @@ class CTkTrimSlider(CTkBaseClass):
     
     self._outer_button_width =  outer_button_width
     self._outer_button_height =  outer_button_height
-    self._outer_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if button_corner_radius is None else button_corner_radius
+    self._outer_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if outer_button_corner_radius is None else outer_button_corner_radius
     
     self._from_:int = from_
     self._to: int = to
@@ -140,7 +140,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._draw()
   
   def _draw(self, no_color_updates: bool=False) -> None:
-    super._draw(no_color_updates)
+    super()._draw(no_color_updates)
     
     if self._orientation.lower() == "horizontal":
       orientation = "w"
