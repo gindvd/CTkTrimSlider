@@ -69,11 +69,11 @@ class CTkTrimSlider(CTkBaseClass):
       if orientation.lower() == "vertical":
         width = 20
       else:
-        width = 200
+        width = 500
 
     if height is None:
       if orientation.lower() == "vertical":
-        height = 200
+        height = 500
       else:
         height = 20
     
@@ -100,15 +100,15 @@ class CTkTrimSlider(CTkBaseClass):
     # set default dimensions according to orientation
     if outer_button_width is None:
       if orientation.lower() == "vertical":
-        outer_button_width = 72
+        outer_button_width = 48
       else:
-        outer_button_width = 24
+        outer_button_width = 12
 
     if outer_button_height is None:
       if orientation.lower() == "vertical":
-       outer_button_height = 24
+       outer_button_height = 12
       else:
-        outer_button_height = 72
+        outer_button_height = 48
     
     self._outer_button_width =  outer_button_width
     self._outer_button_height =  outer_button_height
@@ -138,6 +138,21 @@ class CTkTrimSlider(CTkBaseClass):
 
     self._draw_engine = CustomDrawEngine(self._canvas)
     self._draw()
+
+  def _set_scaling(self, *args, **kwargs):
+    super()._set_scaling(*args, **kwargs)
+
+    self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
+                            height=self._apply_widget_scaling(self._desired_height))
+    self._draw()
+
+  def _set_dimensions(self, width=None, height=None):
+    super()._set_dimensions(width, height)
+
+    self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
+                          height=self._apply_widget_scaling(self._desired_height))
+    self._draw()
+
   
   def _draw(self, no_color_updates: bool=False) -> None:
     super()._draw(no_color_updates)
@@ -165,4 +180,33 @@ class CTkTrimSlider(CTkBaseClass):
                                                                                                 self._rbutton_value,
                                                                                                 self._cbutton_value,
                                                                                                 orientation)
+    
+    if no_color_updates is False or requires_recoloring:
+      self._canvas.configure(bg=self._apply_appearance_mode(self._bg_color))
+
+      if self._border_color == "transparent":
+        self._canvas.itemconfig("border_parts", fill=self._apply_appearance_mode(self._bg_color),
+                                outline=self._apply_appearance_mode(self._bg_color))
+      else:
+        self._canvas.itemconfig("border_parts", fill=self._apply_appearance_mode(self._border_color),
+                                outline=self._apply_appearance_mode(self._border_color))
+
+      self._canvas.itemconfig("inner_parts", fill=self._apply_appearance_mode(self._fg_color),
+                              outline=self._apply_appearance_mode(self._fg_color))
+
+      if self._progress_color == "transparent":
+        self._canvas.itemconfig("progress_parts", fill=self._apply_appearance_mode(self._fg_color),
+                                outline=self._apply_appearance_mode(self._fg_color))
+      else:
+        self._canvas.itemconfig("progress_parts", fill=self._apply_appearance_mode(self._progress_color),
+                                outline=self._apply_appearance_mode(self._progress_color))
+      
+      if (self._hover_state and self._hover) is True:
+        self._canvas.itemconfig("left_button_parts",
+                                fill=self._apply_appearance_mode(self._button_hover_color),
+                                outline=self._apply_appearance_mode(self._button_hover_color))
+      else:
+        self._canvas.itemconfig("left_button_parts",
+                                fill=self._apply_appearance_mode(self._button_color),
+                                outline=self._apply_appearance_mode(self._button_color))
 
