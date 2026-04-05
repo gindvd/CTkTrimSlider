@@ -351,11 +351,11 @@ class CustomDrawEngine(DrawEngine):
       bar_inner_corner_radius = 0
 
     if orientation == "w":
-      x_offset = round(canvas_width - bar_width - outer_button_width)
+      x_offset = round(canvas_width - bar_width - (outer_button_width * 0.5))
       y_offset = round((canvas_height / 2) - (bar_height / 2)) 
     elif orientation == "s":
       x_offset = round((canvas_width / 2) - (bar_width / 2))
-      y_offset = round(canvas_height - bar_height - outer_button_height)
+      y_offset = round(canvas_height - bar_height - (outer_button_height * 0.5))
     
     return self.__draw_rounded_slider_with_border_and_3_buttons_font_shapes(bar_width, bar_height, bar_corner_radius, bar_border_width, bar_inner_corner_radius,
                                                                             x_offset, y_offset,
