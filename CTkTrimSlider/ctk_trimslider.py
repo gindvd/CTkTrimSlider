@@ -67,7 +67,7 @@ class CTkTrimSlider(CTkBaseClass):
     # set default dimensions according to orientation
     if width is None:
       if orientation.lower() == "vertical":
-        width = 16
+        width = 25
       else:
         width = 500
 
@@ -75,7 +75,7 @@ class CTkTrimSlider(CTkBaseClass):
       if orientation.lower() == "vertical":
         height = 500
       else:
-        height = 16
+        height = 25
 
     # outer button shape parameters
     # set default dimensions according to orientation
@@ -130,7 +130,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._orientation: str = orientation
     
     # set initial values of the 3 buttons
-    self._lbutton_value: float = 0
+    self._lbutton_value: float = .25
     self._rbutton_value: float = 1
     self._cbutton_value: float = 0.5
     
