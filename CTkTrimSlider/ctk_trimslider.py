@@ -130,7 +130,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._orientation: str = orientation
     
     # set initial values of the 3 buttons
-    self._lbutton_value: float = .25
+    self._lbutton_value: float = 0
     self._rbutton_value: float = 1
     self._cbutton_value: float = 0.5
     
