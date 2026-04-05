@@ -67,7 +67,7 @@ class CTkTrimSlider(CTkBaseClass):
     # set default dimensions according to orientation
     if width is None:
       if orientation.lower() == "vertical":
-        width = 20
+        width = 16
       else:
         width = 500
 
@@ -75,21 +75,21 @@ class CTkTrimSlider(CTkBaseClass):
       if orientation.lower() == "vertical":
         height = 500
       else:
-        height = 20
+        height = 16
 
     # outer button shape parameters
     # set default dimensions according to orientation
     if outer_button_width is None:
       if orientation.lower() == "vertical":
-        outer_button_width = 36
+        outer_button_width = 28
       else:
-        outer_button_width = 10
+        outer_button_width = 12
 
     if outer_button_height is None:
       if orientation.lower() == "vertical":
-       outer_button_height = 10
+       outer_button_height = 12
       else:
-        outer_button_height = 36
+        outer_button_height = 28
     
     
     # transfer basic functionality (bg_color, size, _appearance_mode, scaling) to CTkBaseClass
@@ -138,7 +138,7 @@ class CTkTrimSlider(CTkBaseClass):
     self.grid_columnconfigure(0, weight=1)
 
     self._canvas = CTkCanvas(master=self,
-                             highlightthickness=0,
+                             highlightthickness=1,
                              width=self._apply_widget_scaling(self._current_width),
                              height=self._apply_widget_scaling(self._current_height))
     
@@ -172,7 +172,10 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       orientation = "w"
 
-    requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(self._apply_widget_scaling(self._width),
+    requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(self._apply_widget_scaling(self._current_width), 
+                                                                                                self._apply_widget_scaling(self._current_height),
+
+                                                                                                self._apply_widget_scaling(self._width),
                                                                                                 self._apply_widget_scaling(self._height),
                                                                                                 self._apply_widget_scaling(self._corner_radius),
                                                                                                 self._apply_widget_scaling(self._border_width),
