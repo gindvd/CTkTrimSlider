@@ -1,7 +1,5 @@
 import tkinter
 
-import math
-
 from customtkinter.windows.widgets.core_rendering import DrawEngine
 from customtkinter.windows.widgets.core_rendering import CTkCanvas
 
