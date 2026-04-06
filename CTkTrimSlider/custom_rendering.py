@@ -140,6 +140,76 @@ class CustomDrawEngine(DrawEngine):
                           width - outer_button_corner_radius,
                           lbutton_y_pos + outer_button_corner_radius,)
    
+   # create the right slider button as a rectangle with round corners  
+    if not self._canvas.find_withtag("rbutton_oval_1_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_1_a", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_1_b", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
+    
+    if not self._canvas.find_withtag("rbutton_oval_2_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_2_a", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_2_b", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
+
+    # create the 2 rectangles (if needed)
+    if not self._canvas.find_withtag("rbutton_rectangle_1") and outer_button_length > 0:
+      self._canvas.create_rectangle(0, 0, 0, 0, tags=("rbutton_rectangle_1", "button_rectangle_part", "button_parts", "right_button_parts"), width=0)
+      requires_recoloring = True
+
+    elif self._canvas.find_withtag("rbutton_rectangle_1") and not outer_button_length > 0:
+      self._canvas.delete("rbutton_rectangle_1")
+
+    # set positions of circles and rectangles
+    # draws button on horizontal progress bar
+    if orientation == "w":
+      rbutton_x_pos =  outer_button_length / 2 + rbutton_value * (width - outer_button_length - 1)
+      
+      self._canvas.coords("rbutton_oval_1_a", rbutton_x_pos, outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_1_b", rbutton_x_pos, outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_a", rbutton_x_pos, height - outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_b", rbutton_x_pos, height - outer_button_corner_radius, outer_button_corner_radius)
+
+      self._canvas.coords("rbutton_rectangle_1",
+                          rbutton_x_pos - outer_button_corner_radius,
+                          outer_button_corner_radius,
+                          rbutton_x_pos + outer_button_corner_radius,
+                          height - outer_button_corner_radius)
+
+    # draws button on vertical progress bar
+    elif orientation == "s":
+      rbutton_y_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - rbutton_value)
+      
+      self._canvas.coords("rbutton_oval_1_a", outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_1_b", outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_a", width - outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_b", width - outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
+
+      self._canvas.coords("rbutton_rectangle_1",
+                          outer_button_corner_radius,
+                          rbutton_y_pos - outer_button_corner_radius,
+                          width - outer_button_corner_radius,
+                          rbutton_y_pos + outer_button_corner_radius,)
+    
+    # create the center slider button as a rectangle with round corners  
+    if not self._canvas.find_withtag("cbutton_oval_1_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("cbutton_oval_1_a", "button_corner_part", "button_parts", "center_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("cbutton_oval_1_b", "button_corner_part", "button_parts", "center_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
+
+    # set positions of circles and rectangles
+    # draws button on horizontal progress bar
+    if orientation == "w":
+      cbutton_x_pos =  outer_button_length / 2 + cbutton_value * (width - outer_button_length - 1)
+      
+      self._canvas.coords("cbutton_oval_1_a", cbutton_x_pos, height / 2, outer_button_corner_radius)
+      self._canvas.coords("cbutton_oval_1_b", cbutton_x_pos, height / 2, outer_button_corner_radius)
+
+    # draws button on vertical progress bar
+    elif orientation == "s":
+      cbutton_y_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - cbutton_value)
+      
+      self._canvas.coords("cbutton_oval_1_a", width / 2, cbutton_y_pos, outer_button_corner_radius)
+      self._canvas.coords("cbutton_oval_1_b", width / 2, cbutton_y_pos, outer_button_corner_radius)
     
     if requires_recoloring:  # new parts were added -> manage z-order
       self._canvas.tag_raise("button_parts")

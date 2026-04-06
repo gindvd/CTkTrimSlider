@@ -112,7 +112,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._orientation: str = orientation
     
     # set initial left, right, and center button values
-    self._lvalue: float = 1
+    self._lvalue: float = 0
     self._rvalue: float = 1
     self._cvalue: float = 0.5
     
@@ -124,7 +124,7 @@ class CTkTrimSlider(CTkBaseClass):
     self.grid_columnconfigure(0, weight=1)
 
     self._canvas = CTkCanvas(master=self,
-                             highlightthickness=1,
+                             highlightthickness=0,
                              width=self._apply_widget_scaling(self._current_width),
                              height=self._apply_widget_scaling(self._current_height))
     
