@@ -9,3 +9,5 @@ range_slider = CTkTrimSlider(root)
 range_slider.pack(padx=30, pady=30, fill="both")
 
 root.mainloop()
+
+
