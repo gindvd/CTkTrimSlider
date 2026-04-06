@@ -103,7 +103,7 @@ class CTkTrimSlider(CTkBaseClass):
     
     self._from_:int = from_
     self._to: int = to
-    self._number_of_steps: int | None = number_of_steps
+    self._number_of_steps: int  = width if number_of_steps is None else number_of_steps
     self._output_value = 0
     
     self._state: str = state
