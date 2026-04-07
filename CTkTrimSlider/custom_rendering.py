@@ -80,9 +80,7 @@ class CustomDrawEngine(DrawEngine):
                                                     cbutton_value: int | float,
                                                     
                                                     orientation: str) -> bool:
-    # need offset to move proress bar down (or down right if vertical) to align with the elongated outer buttons
-    # without the buttons getting cutoff
-    
+   
     # draw normal progressbar
     requires_recoloring = self._DrawEngine__draw_rounded_progress_bar_with_border_font_shapes(width=width, height=height, border_width=border_width, corner_radius=corner_radius, inner_corner_radius=inner_corner_radius,
                                                                                    progress_value_1=lbutton_value, progress_value_2=rbutton_value, orientation=orientation)  

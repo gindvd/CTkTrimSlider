@@ -1,9 +1,3 @@
-"""
-CTkTrimSlider
-Video trim slider for custom tkinter
-Author: David Gingerich
-Version 0.1.0
-"""
 
 import tkinter
 import sys
@@ -98,13 +92,18 @@ class CTkTrimSlider(CTkBaseClass):
     
     # center button shape
     self._center_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if center_button_corner_radius is None else center_button_corner_radius
-        
+    
     self._outer_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if outer_button_corner_radius is None else outer_button_corner_radius
+    
+    if from_ >= to:
+      raise IndexError
     
     self._from_:int = from_
     self._to: int = to
     self._number_of_steps: int  = width if number_of_steps is None else number_of_steps
-    self._output_value = 0
+    self._starttime_output_value: int| float = 0
+    self._currenttime_output_value: int | float = 0
+    self._endtime_output_value: int | float = 0
     
     self._state: str = state
     self._hover: bool = hover
@@ -112,13 +111,15 @@ class CTkTrimSlider(CTkBaseClass):
     self._orientation: str = orientation
     
     # set initial left, right, and center button values
-    self._lvalue: float = 0
-    self._rvalue: float = 1
-    self._cvalue: float = 0.5
+    self._starttime_value: float = 0
+    self._endtime_value: float = 1
+    self._currenttime_value: float = 0.5
     
     self._lbutton_command = lbutton_command
     self._rbutton_command = rbutton_command
     self._cbutton_command = cbutton_command
+    
+    self._active = None
     
     self.grid_rowconfigure(0, weight=1)
     self.grid_columnconfigure(0, weight=1)
@@ -184,9 +185,9 @@ class CTkTrimSlider(CTkBaseClass):
 
                                                 center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
 
-                                                lbutton_value = self._lvalue,
-                                                rbutton_value = self._rvalue,
-                                                cbutton_value = self._cvalue,
+                                                lbutton_value = self._starttime_value,
+                                                rbutton_value = self._endtime_value,
+                                                cbutton_value = self._currenttime_value,
                                                 orientation = orientation
                                             )
     
@@ -241,17 +242,19 @@ class CTkTrimSlider(CTkBaseClass):
   
   def _create_bindings(self, sequence: str | None = None):
     if sequence is None or sequence == "<Enter>":
-      self._canvas.bind("left_button_parts", "<Enter>", self._lbutton_on_enter)
-      self._canvas.bind("right_button_parts", "<Enter>", self._rbutton_on_enter)
-      self._canvas.bind("center_button_parts", "<Enter>", self._cbutton_on_enter)
+      self._canvas.tag_bind("left_button_parts", "<Enter>", self._lbutton_on_enter)
+      self._canvas.tag_bind("right_button_parts", "<Enter>", self._rbutton_on_enter)
+      self._canvas.tag_bind("center_button_parts", "<Enter>", self._cbutton_on_enter)
     if sequence is None or sequence == "<Leave>":
-      self._canvas.bind("left_button_parts", "<Leave>", self._lbutton_on_leave)
-      self._canvas.bind("right_button_parts", "<Leave>", self._rbutton_on_leave)
-      self._canvas.bind("center_button_parts", "<Leave>", self._cbutton_on_leave)
+      self._canvas.tag_bind("left_button_parts", "<Leave>", self._lbutton_on_leave)
+      self._canvas.tag_bind("right_button_parts", "<Leave>", self._rbutton_on_leave)
+      self._canvas.tag_bind("center_button_parts", "<Leave>", self._cbutton_on_leave)
     if sequence is None or sequence == "<Button-1>":
       self._canvas.bind("<Button-1>", self._clicked)
     if sequence is None or sequence == "<B1-Motion>":
-      self._canvas.bind("<Button-1>", self._clicked)
+      self._canvas.bind("<B1-Motion>", self._clicked)
+    if sequence is None or sequence == "ButtonRelease-1":
+      self._canvas.bind("<ButtonRelease-1>", lambda x: setattr(self, "_active", None))
   
   def _lbutton_on_enter(self, event=0):
     if self._state != "normal":
@@ -311,56 +314,68 @@ class CTkTrimSlider(CTkBaseClass):
     if self._state != "normal":
       return
     
-    if "left_button_parts" in self._canvas.gettags("current"):
+    tags = self._canvas.find_withtag("current")
+
+    if "left_button_parts" in tags:
+      self._active = "left"
+    elif "center_button_parts" in tags:
+      self._active = "center"
+    elif "right_button_parts" in tags:
+      self._active = "right"
+
+    self._move_handle(event)
+    
+  def _move_handle(self, event):
+    if self._active == "left":
       if self._orientation.lower() == "horizontal":
-        self._lvalue = self._reverse_widget_scaling(event.x / self._current_width)
+        self._starttime_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
-        self._lvalue = 1 - self._reverse_widget_scaling(event.y / self._current_height)
+        self._starttime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
-      if self._lvalue < 0:
-        self._lvalue = 0
-      elif self._lvalue >= self._cvalue:
-        self._lvalue = self._cvalue - ((self._to - self._from_) / self._number_of_steps)
+      if self._starttime_value < 0:
+        self._starttime_value = 0
+      elif self._starttime_value >= self._currenttime_value:
+        self._starttime_value = self._currenttime_value - ((self._to - self._from_) / self._number_of_steps)
         
-      self._output_value = self._round_to_step_size(self._from_ + (self._lvalue * (self._to - self._from_)))
-      self._lvalue = (self._output_value - self._from_) / (self._to - self._from_)
+      self._starttime_output_value = self._round_to_step_size(self._from_ + (self._starttime_value * (self._to - self._from_)))
+      self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
       
       if self._lbutton_command is not None:
-        self._lbutton_command(self._output_value)
+        self._lbutton_command(self._starttime_output_value)
     
-    elif "center_button_parts" in self._canvas.gettags("current"):
+    elif self._active == "center":
       if self._orientation.lower() == "horizontal":
-        self._cvalue = self._reverse_widget_scaling(event.x / self._current_width)
+        self._currenttime_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
-        self._cvalue = 1 - self._reverse_widget_scaling(event.y / self._current_height)
+        self._currenttime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
-      if self._cvalue <= self._lvalue:
-        self._cvalue = self._lvalue + ((self._to - self._from_) / self._number_of_steps)
-      elif self._cvalue >= self._rvalue:
-        self._cvalue = self._rvalue - ((self._to - self._from_) / self._number_of_steps)
+      if self._currenttime_value <= self._starttime_value:
+        self._currenttime_value = self._starttime_value + ((self._to - self._from_) / self._number_of_steps)
+      elif self._currenttime_value >= self._endtime_value:
+        self._currenttime_value = self._endtime_value - ((self._to - self._from_) / self._number_of_steps)
         
-      self._output_value = self._round_to_step_size(self._from_ + (self._cvalue * (self._to - self._from_)))
-      self._cvalue = (self._output_value - self._from_) / (self._to - self._from_)
+      self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._currenttime_value * (self._to - self._from_)))
+      self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
       
       if self._cbutton_command is not None:
-        self._cbutton_command(self._output_value)
+        self._cbutton_command(self._currenttime_output_value)
     
-    elif "right_button_parts" in self._canvas.gettags("current"):
+    elif self._active == "right":
       if self._orientation.lower() == "horizontal":
-        self._rvalue = self._reverse_widget_scaling(event.x / self._current_width)
+        self._endtime_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
-        self._rvalue = 1 - self._reverse_widget_scaling(event.y / self._current_height)
+        self._endtime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
-      if self._rvalue >= 1:
-        self._rvalue = 1
-      elif self._rvalue <= self._cvalue:
-        self._rvalue = self._cvalue + ((self._to - self._from_) / self._number_of_steps)
+      if self._endtime_value >= 1:
+        self._endtime_value = 1
+      elif self._endtime_value <= self._currenttime_value:
+        self._endtime_value = self._currenttime_value + ((self._to - self._from_) / self._number_of_steps)
         
-      self._output_value = self._round_to_step_size(self._from_ + (self._rvalue * (self._to - self._from_)))
-      self._rvalue = (self._output_value - self._from_) / (self._to - self._from_)
+      self._endtime_output_value = self._round_to_step_size(self._from_ + (self._endtime_value * (self._to - self._from_)))
+      self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
       
       if self._rbutton_command is not None:
-        self._rbutton_command(self._output_value)
+        self._rbutton_command(self._endtime_output_value)
     
     # redraws the slider with the click button moved to it's new value
     self._draw(no_color_updates=False)
@@ -505,6 +520,47 @@ class CTkTrimSlider(CTkBaseClass):
 
     else:
       return super().cget(attribute_name)
+  
+  def get(self, value_name: str) -> None:
+    if value_name == "start_time":
+      return self._starttime_output_value
+    elif value_name == "end_time":
+      return self._endtime_output_value
+    elif value_name == "current_time":
+      return self._currenttime_output_value
+    
+    else:
+      raise AttributeError
+  
+  def set(self, value_name, input_value):
+    if value_name == "start_time":
+      if input_value > self._currenttime_output_value:
+        input_value = self._currenttime_output_value
+      elif input_value < self._from_:
+        input_value = self._from_
+      
+      self._starttime_output_value = self._round_to_step_size(input_value)
+      self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
+    
+    elif value_name == "current_time":
+      if input_value > self._endtime_output_value:
+        input_value = self._endtime_output_value
+      elif input_value < self._starttime_output_value:
+        input_value = self._starttime_output_value
+      
+      self._currenttime_output_value = self._round_to_step_size(input_value)
+      self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
+    
+    elif value_name == "end_time":
+      if input_value > self._to:
+        self._endtime_output_value = self._to
+      elif input_value < self._currenttime_output_value:
+        input_value = self._currenttime_output_value
+      
+      self._endtime_output_value = self._round_to_step_size(input_value)
+      self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
+      
+    self._draw(no_color_updates=False)
   
   def _destroy(self):
     super().destroy()
