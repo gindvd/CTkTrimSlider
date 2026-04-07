@@ -1,3 +1,9 @@
+"""
+CTkTrimSlider
+Video trim slider for custom tkinter
+Author: David Gingerich
+Version 0.1.1
+"""
 
 import tkinter
 import sys
