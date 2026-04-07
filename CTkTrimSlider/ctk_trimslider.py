@@ -126,7 +126,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._end_variable: tkinter.Variable | None = end_variable
     self._center_variable: tkinter.Variable | None = center_variable
     self._variable_callback_blocked = False
-    self._variable_callback_name: list[bool | None] = [None, None, None]
+    self._variable_callback_name: list[Any | None] = [None, None, None]
     
     # the currentbutton being clicked on by mouse
     self._active = None
@@ -153,7 +153,7 @@ class CTkTrimSlider(CTkBaseClass):
       self.set("start_time", self._start_variable.get(), from_variable_callback=True)
 
 
-    if self.end_variable is not None:
+    if self._end_variable is not None:
       self._variable_callback_name[1] = self._end_variable.trace_add("write", lambda *args: self._on_end_variable_change())
       self.set("end_time", self._end_variable.get(), from_variable_callback=True)
 
@@ -564,7 +564,7 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       return super().cget(attribute_name)
   
-  def get(self, value_name: str) -> None:
+  def get(self, value_name: str) -> int | float:
     if value_name == "start_time":
       return self._starttime_output_value
     elif value_name == "end_time":
