@@ -135,7 +135,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._variable_callback_name: list[Any | None] = [None, None, None]
     
     # the currentbutton being clicked on by mouse
-    self._active = None
+    self._active: str | None = None
     
     self.grid_rowconfigure(0, weight=1)
     self.grid_columnconfigure(0, weight=1)
@@ -632,12 +632,18 @@ class CTkTrimSlider(CTkBaseClass):
     if self._variable_callback_blocked:
       return
     
+    if self._start_variable is None:
+      return
+
     self._variable_callback_blocked = True
     self.set("start_time", self._start_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
   def _on_current_time_change(self) -> None:
     if self._variable_callback_blocked:
+      return
+
+    if self._center_variable is None:
       return
     
     self._variable_callback_blocked = True
@@ -646,6 +652,9 @@ class CTkTrimSlider(CTkBaseClass):
   
   def _on_end_time_change(self) -> None:
     if self._variable_callback_blocked:
+      return
+    
+    if self._end_variable is None:
       return
     
     self._variable_callback_blocked = True
