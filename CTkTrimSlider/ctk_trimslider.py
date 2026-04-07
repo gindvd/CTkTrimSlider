@@ -595,6 +595,9 @@ class CTkTrimSlider(CTkBaseClass):
       self._start_variables.trace_remove("write", self._variable_callback_name)
 
     super().destroy()
+  
+  def _variable_callback(self):
+    pass
 
   def focus(self):
     return self._canvas.focus()
