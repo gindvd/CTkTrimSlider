@@ -150,16 +150,16 @@ class CTkTrimSlider(CTkBaseClass):
     # change variable individually
     if self._start_variable is not None:
       self._variable_callback_name[0] = self._start_variable.trace_add("write", lambda *args: self._on_start_variable_change())
-      self.set("start_time", self._start_variable.get("start_time"), from_variable_callback=True)
+      self.set("start_time", self._start_variable.get(), from_variable_callback=True)
 
 
     if self.end_variable is not None:
       self._variable_callback_name[1] = self._end_variable.trace_add("write", lambda *args: self._on_end_variable_change())
-      self.set("end_time", self._end_variable.get("end_time"), from_variable_callback=True)
+      self.set("end_time", self._end_variable.get(), from_variable_callback=True)
 
     if self._current_variable is not None:
       self._variable_callback_name[2] = self._current_variable.trace_add("write", lambda *args: self._on_current_variable_change())
-      self.set("current_time", self._current_variable.get("current_time"), from_variable_callback=True)
+      self.set("current_time", self._current_variable.get(), from_variable_callback=True)
 
   def _set_scaling(self, *args, **kwargs):
     super()._set_scaling(*args, **kwargs)
