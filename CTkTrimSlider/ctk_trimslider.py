@@ -157,9 +157,9 @@ class CTkTrimSlider(CTkBaseClass):
       self._variable_callback_name[1] = self._end_variable.trace_add("write", lambda *args: self._on_end_variable_change())
       self.set("end_time", self._end_variable.get(), from_variable_callback=True)
 
-    if self._current_variable is not None:
-      self._variable_callback_name[2] = self._current_variable.trace_add("write", lambda *args: self._on_current_variable_change())
-      self.set("current_time", self._current_variable.get(), from_variable_callback=True)
+    if self._center_variable is not None:
+      self._variable_callback_name[2] = self._center_variable.trace_add("write", lambda *args: self._on_center_variable_change())
+      self.set("current_time", self._center_variable.get(), from_variable_callback=True)
 
   def _set_scaling(self, *args, **kwargs):
     super()._set_scaling(*args, **kwargs)
@@ -609,8 +609,8 @@ class CTkTrimSlider(CTkBaseClass):
       if value_name == "start_time" and self._start_variable is not None:
         self._start_variable.set(self._starttime_output_value)
 
-      elif value_name == "current_time" and self._current_variable is not None:
-        self._current_variable.set(self._currenttime_output_value)
+      elif value_name == "current_time" and self._center_variable is not None:
+        self._center_variable.set(self._currenttime_output_value)
 
       elif value_name == "end_time" and self._end_variable is not None:
         self._end_variable.set(self._endtime_output_value)
@@ -633,7 +633,7 @@ class CTkTrimSlider(CTkBaseClass):
       return
     
     self._variable_callback_blocked = True
-    self.set("current_time", self._current_variable.get(), from_variable_callback=True)
+    self.set("current_time", self._center_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
   def _on_end_time_change(self):
