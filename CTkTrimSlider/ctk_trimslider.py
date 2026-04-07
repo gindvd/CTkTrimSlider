@@ -167,14 +167,14 @@ class CTkTrimSlider(CTkBaseClass):
       self._variable_callback_name[2] = self._center_variable.trace_add("write", lambda *args: self._on_center_variable_change())
       self.set("current_time", self._center_variable.get(), from_variable_callback=True)
 
-  def _set_scaling(self, *args, **kwargs):
+  def _set_scaling(self, *args, **kwargs) -> None:
     super()._set_scaling(*args, **kwargs)
 
     self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
                             height=self._apply_widget_scaling(self._desired_height))
     self._draw()
 
-  def _set_dimensions(self, width=None, height=None):
+  def _set_dimensions(self, width=None, height=None) -> None:
     super()._set_dimensions(width, height)
 
     self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
@@ -270,7 +270,7 @@ class CTkTrimSlider(CTkBaseClass):
                               fill=self._apply_appearance_mode(self._button_color),
                               outline=self._apply_appearance_mode(self._button_color))
   
-  def _create_bindings(self, sequence: str | None = None):
+  def _create_bindings(self, sequence: str | None = None) -> None:
     if sequence is None or sequence == "<Enter>":
       self._canvas.tag_bind("left_button_parts", "<Enter>", self._lbutton_on_enter)
       self._canvas.tag_bind("right_button_parts", "<Enter>", self._rbutton_on_enter)
@@ -286,7 +286,7 @@ class CTkTrimSlider(CTkBaseClass):
     if sequence is None or sequence == "ButtonRelease-1":
       self._canvas.bind("<ButtonRelease-1>", lambda x: setattr(self, "_active", None))
   
-  def _lbutton_on_enter(self, event=0):
+  def _lbutton_on_enter(self, event=0) -> None:
     if self._state != "normal":
       return
     
@@ -298,7 +298,7 @@ class CTkTrimSlider(CTkBaseClass):
                             fill=self._apply_appearance_mode(self._button_hover_color),
                             outline=self._apply_appearance_mode(self._button_hover_color))
   
-  def _rbutton_on_enter(self, event=0):
+  def _rbutton_on_enter(self, event=0) -> None:
     if self._state != "normal":
       return
     
@@ -310,7 +310,7 @@ class CTkTrimSlider(CTkBaseClass):
                             fill=self._apply_appearance_mode(self._button_hover_color),
                             outline=self._apply_appearance_mode(self._button_hover_color))
   
-  def _cbutton_on_enter(self, event=0):
+  def _cbutton_on_enter(self, event=0) -> None:
     if self._state != "normal":
       return
     
@@ -322,25 +322,25 @@ class CTkTrimSlider(CTkBaseClass):
                             fill=self._apply_appearance_mode(self._button_hover_color),
                             outline=self._apply_appearance_mode(self._button_hover_color))
   
-  def _lbutton_on_leave(self, event=0):
+  def _lbutton_on_leave(self, event=0) -> None:
     self._hover_state = False
     self._canvas.itemconfig("left_button_parts",
                             fill=self._apply_appearance_mode(self._button_color),
                             outline=self._apply_appearance_mode(self._button_color))
   
-  def _rbutton_on_leave(self, event=0):
+  def _rbutton_on_leave(self, event=0) -> None:
     self._hover_state = False
     self._canvas.itemconfig("right_button_parts",
                             fill=self._apply_appearance_mode(self._button_color),
                             outline=self._apply_appearance_mode(self._button_color))
   
-  def _cbutton_on_leave(self, event=0):
+  def _cbutton_on_leave(self, event=0) -> None:
     self._hover_state = False
     self._canvas.itemconfig("center_button_parts",
                             fill=self._apply_appearance_mode(self._button_color),
                             outline=self._apply_appearance_mode(self._button_color))
 
-  def _clicked(self, event=0):
+  def _clicked(self, event=0) -> None:
     if self._state != "normal":
       return
 
@@ -355,7 +355,7 @@ class CTkTrimSlider(CTkBaseClass):
 
     self._move_handle(event)
   
-  def _move_handle(self, event=0):
+  def _move_handle(self, event=0) -> None:
     if self._active == "left":
       if self._orientation.lower() == "horizontal":
         self._starttime_value = self._reverse_widget_scaling(event.x / self._current_width)
@@ -439,13 +439,13 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       return value
     
-  def bind(self, sequence: str | None= None, command: Callable[[Any], int | float] | None = None, add: str | bool = True):
+  def bind(self, sequence: str | None= None, command: Callable[[Any], int | float] | None = None, add: str | bool = True) -> None:
     """ called on the tkinter.Canvas """
     if not (add == "+" or add is True):
       raise ValueError("'add' argument can only be '+' or True to preserve internal callbacks")
     self._canvas.bind(sequence, command, add=True)
 
-  def unbind(self, sequence: str | None = None, funcid: str | None = None):
+  def unbind(self, sequence: str | None = None, funcid: str | None = None) -> None:
     """ called on the tkinter.Label and tkinter.Canvas """
     if funcid is not None:
       raise ValueError("'funcid' argument can only be None, because there is a bug in" +
@@ -454,7 +454,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._canvas.unbind(sequence, None)
     self._create_bindings(sequence=sequence)  # restore internal callbacks for sequence
     
-  def configure(self, require_redraw=False, **kwargs):
+  def configure(self, require_redraw=False, **kwargs) -> None:
     if "corner_radius" in kwargs:
       self._corner_radius = kwargs.pop("corner_radius")
       require_redraw = True
@@ -583,7 +583,7 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       raise AttributeError
   
-  def set(self, value_name, input_value, from_variable_callback=False):
+  def set(self, value_name, input_value, from_variable_callback=False) -> None:
     if value_name == "start_time":
       if input_value > self._currenttime_output_value:
         input_value = self._currenttime_output_value
@@ -628,7 +628,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._draw(no_color_updates=False)
   
   # sets internal variables base on external variable change
-  def _on_start_variable_change(self):
+  def _on_start_variable_change(self) -> None:
     if self._variable_callback_blocked:
       return
     
@@ -636,7 +636,7 @@ class CTkTrimSlider(CTkBaseClass):
     self.set("start_time", self._start_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
-  def _on_current_time_change(self):
+  def _on_current_time_change(self) -> None:
     if self._variable_callback_blocked:
       return
     
@@ -644,7 +644,7 @@ class CTkTrimSlider(CTkBaseClass):
     self.set("current_time", self._center_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
-  def _on_end_time_change(self):
+  def _on_end_time_change(self) -> None:
     if self._variable_callback_blocked:
       return
     
@@ -652,18 +652,18 @@ class CTkTrimSlider(CTkBaseClass):
     self.set("end_time", self._end_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
-  def _destroy(self):
+  def _destroy(self) -> None:
     # remove variable_callback from variable callbacks if variable exists
     if self._start_variables is not None:
       self._start_variables.trace_remove("write", self._variable_callback_name)
 
     super().destroy()
 
-  def focus(self):
+  def focus(self) -> Any:
     return self._canvas.focus()
 
-  def focus_set(self):
+  def focus_set(self) -> Any:
     return self._canvas.focus_set()
 
-  def focus_force(self):
+  def focus_force(self) -> Any:
     return self._canvas.focus_force()

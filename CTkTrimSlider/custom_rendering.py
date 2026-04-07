@@ -82,7 +82,7 @@ class CustomDrawEngine(DrawEngine):
                                                     orientation: str) -> bool:
    
     # draw normal progressbar
-    requires_recoloring = self._DrawEngine__draw_rounded_progress_bar_with_border_font_shapes(width=width, height=height, border_width=border_width, corner_radius=corner_radius, inner_corner_radius=inner_corner_radius,
+    requires_recoloring: bool = self._DrawEngine__draw_rounded_progress_bar_with_border_font_shapes(width=width, height=height, border_width=border_width, corner_radius=corner_radius, inner_corner_radius=inner_corner_radius,
                                                                                    progress_value_1=lbutton_value, progress_value_2=rbutton_value, orientation=orientation)  
     
     
