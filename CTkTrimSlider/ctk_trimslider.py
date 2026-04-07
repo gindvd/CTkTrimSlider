@@ -667,7 +667,13 @@ class CTkTrimSlider(CTkBaseClass):
   def _destroy(self) -> None:
     # remove variable_callback from variable callbacks if variable exists
     if self._start_variables is not None:
-      self._start_variables.trace_remove("write", self._variable_callback_name)
+      self._start_variables.trace_remove("write", self._variable_callback_name[0])
+    
+    if self._end_variables is not None:
+      self._end_variables.trace_remove("write", self._variable_callback_name[1])
+    
+    if self._center_variables is not None:
+      self._center_variables.trace_remove("write", self._variable_callback_name[2])
 
     super().destroy()
 
