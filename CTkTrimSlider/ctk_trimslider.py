@@ -125,7 +125,7 @@ class CTkTrimSlider(CTkBaseClass):
     # initialize tkinter variables
     self._start_variable: tkinter.Variable | None = start_variable
     self._end_variable: tkinter.Variable | None = end_variable
-    self._current_variable: tkinter.Variable | None = current_variable
+    self._current_variable: tkinter.Variable | None = center_variable
     self._variable_callback_blocked = False
     self._variable_callback_name: list[bool | None] = [None, None, None]
     
@@ -154,7 +154,7 @@ class CTkTrimSlider(CTkBaseClass):
       self.set("start_time", self._start_variable.get("start_time"), from_variable_callback=True)
       self._variable_callback_blocked = False
 
-    if self.end_variable is not None:
+    if self._end_variable is not None:
       self._variable_callback_name[1] = self._end_variable.trace_add("write", self._variable_callback)
       self._variable_callback_blocked = True
       self.set("end_time", self._end_variable.get("end_time"), from_variable_callback=True)
@@ -342,6 +342,8 @@ class CTkTrimSlider(CTkBaseClass):
   def _clicked(self, event=0):
     if self._state != "normal":
       return
+    
+    tags = self._canvas.gettags("current")
     
     if "left_button_parts" in tags:
       self._active = "left"
