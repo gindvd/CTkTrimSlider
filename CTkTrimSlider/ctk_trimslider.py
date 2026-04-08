@@ -199,12 +199,16 @@ class CTkTrimSlider(CTkBaseClass):
         self.configure(cursor="pointinghand")
       elif sys.platform.startswith("win"):
         self.configure(cursor="hand2")
+      #elif sys.platform == "linux":
+      #  self.configure(cursor="hand")
 
     elif self._state == "disabled" and self._cursor_manipulation_enabled:
       if sys.platform == "darwin":
         self.configure(cursor="arrow")
       elif sys.platform.startswith("win"):
         self.configure(cursor="arrow")
+      #elif sys.platform == "linux":
+      #  self.configure(cursor="arrow")
   
   def _draw(self, no_color_updates: bool=False) -> None:
     super()._draw(no_color_updates)
