@@ -70,11 +70,11 @@ class CTkTrimSlider(CTkBaseClass):
       if orientation.lower() == "vertical":
         width = 24
       else:
-        width = 500
+        width = 300
 
     if height is None:
       if orientation.lower() == "vertical":
-        height = 500
+        height = 300
       else:
         height = 24
     
@@ -122,7 +122,7 @@ class CTkTrimSlider(CTkBaseClass):
     # set initial left, right, and center button values
     self._starttime_value: float = 0
     self._endtime_value: float = 1
-    self._currenttime_value: float = 0
+    self._currenttime_value: float = 0.5
     
     # commands fro each button
     self._lbutton_command = lbutton_command
@@ -368,7 +368,7 @@ class CTkTrimSlider(CTkBaseClass):
       if self._starttime_value < 0:
         self._starttime_value = 0
       elif self._starttime_value >= self._currenttime_value:
-        self._starttime_value = abs(self._currenttime_value -  (1 / self._number_of_steps))
+        self._starttime_value = self._currenttime_value -  (1 / self._number_of_steps)
         
       self._starttime_output_value = self._round_to_step_size(self._from_ + (self._starttime_value * (self._to - self._from_)))
       self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
@@ -391,9 +391,9 @@ class CTkTrimSlider(CTkBaseClass):
         self._currenttime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
       if self._currenttime_value <= self._starttime_value:
-        self._currenttime_value = abs(self._starttime_value + (1 / self._number_of_steps))
+        self._currenttime_value = self._starttime_value + (1 / self._number_of_steps)
       elif self._currenttime_value >= self._endtime_value:
-        self._currenttime_value = abs(self._endtime_value - (1 / self._number_of_steps))
+        self._currenttime_value = self._endtime_value - (1 / self._number_of_steps)
         
       self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._currenttime_value * (self._to - self._from_)))
       self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
@@ -418,7 +418,7 @@ class CTkTrimSlider(CTkBaseClass):
       if self._endtime_value >= 1:
         self._endtime_value = 1
       elif self._endtime_value <= self._currenttime_value:
-        self._endtime_value = abs(self._currenttime_value + (1 / self._number_of_steps))
+        self._endtime_value = self._currenttime_value + (1 / self._number_of_steps)
         
       self._endtime_output_value = self._round_to_step_size(self._from_ + (self._endtime_value * (self._to - self._from_)))
       self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
