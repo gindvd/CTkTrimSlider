@@ -120,9 +120,9 @@ class CTkTrimSlider(CTkBaseClass):
     self._orientation: str = orientation.lower()
     
     # set initial left, right, and center button values
-    self._starttime_value: float = 0
-    self._endtime_value: float = 1
-    self._currenttime_value: float = 0.5
+    self._lbutton_value: float = 0
+    self._rbutton_value: float = 1
+    self._cbutton_value: float = 0.5
     
     # commands fro each button
     self._lbutton_command = lbutton_command
@@ -217,9 +217,9 @@ class CTkTrimSlider(CTkBaseClass):
 
                                                 center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
 
-                                                lbutton_value = self._starttime_value,
-                                                rbutton_value = self._endtime_value,
-                                                cbutton_value = self._currenttime_value,
+                                                lbutton_value = self._lbutton_value,
+                                                rbutton_value = self._rbutton_value,
+                                                cbutton_value = self._cbutton_value,
                                                 orientation = orientation
                                             )
     
@@ -362,17 +362,17 @@ class CTkTrimSlider(CTkBaseClass):
     # change the left buttons location on the bar and set output values
     if self._active == "left":
       if self._orientation.lower() == "horizontal":
-        self._starttime_value = self._reverse_widget_scaling(event.x / self._current_width)
+        self._lbutton_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
-        self._starttime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
+        self._lbutton_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
-      if self._starttime_value < 0:
-        self._starttime_value = 0
-      elif self._starttime_value >= self._currenttime_value:
-        self._starttime_value = self._currenttime_value -  (1 / self._number_of_steps)
+      if self._lbutton_value < 0:
+        self._lbutton_value = 0
+      elif self._lbutton_value >= self._cbutton_value:
+        self._lbutton_value = self._cbutton_value -  (1 / self._number_of_steps)
         
-      self._starttime_output_value = self._round_to_step_size(self._from_ + (self._starttime_value * (self._to - self._from_)))
-      self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
+      self._starttime_output_value = self._round_to_step_size(self._from_ + (self._lbutton_value * (self._to - self._from_)))
+      self._lbutton_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
       
       # run command associated with left button
       if self._lbutton_command is not None:
@@ -387,17 +387,17 @@ class CTkTrimSlider(CTkBaseClass):
     # change the center buttons location on the bar and set output values
     elif self._active == "center":
       if self._orientation == "horizontal":
-        self._currenttime_value = self._reverse_widget_scaling(event.x / self._current_width)
+        self._cbutton_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
-        self._currenttime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
+        self._cbutton_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
-      if self._currenttime_value <= self._starttime_value:
-        self._currenttime_value = self._starttime_value + (1 / self._number_of_steps)
-      elif self._currenttime_value >= self._endtime_value:
-        self._currenttime_value = self._endtime_value - (1 / self._number_of_steps)
+      if self._cbutton_value <= self._lbutton_value:
+        self._cbutton_value = self._lbutton_value + (1 / self._number_of_steps)
+      elif self._cbutton_value >= self._rbutton_value:
+        self._cbutton_value = self._rbutton_value - (1 / self._number_of_steps)
         
-      self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._currenttime_value * (self._to - self._from_)))
-      self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
+      self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._cbutton_value * (self._to - self._from_)))
+      self._cbutton_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
       
       # run command associated with center button
       if self._cbutton_command is not None:
@@ -412,17 +412,17 @@ class CTkTrimSlider(CTkBaseClass):
     # change the right buttons location on the bar and set output values
     elif self._active == "right":
       if self._orientation == "horizontal":
-        self._endtime_value = self._reverse_widget_scaling(event.x / self._current_width)
+        self._rbutton_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
-        self._endtime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
+        self._rbutton_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
-      if self._endtime_value >= 1:
-        self._endtime_value = 1
-      elif self._endtime_value <= self._currenttime_value:
-        self._endtime_value = self._currenttime_value + (1 / self._number_of_steps)
+      if self._rbutton_value >= 1:
+        self._rbutton_value = 1
+      elif self._rbutton_value <= self._cbutton_value:
+        self._rbutton_value = self._cbutton_value + (1 / self._number_of_steps)
         
-      self._endtime_output_value = self._round_to_step_size(self._from_ + (self._endtime_value * (self._to - self._from_)))
-      self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
+      self._endtime_output_value = self._round_to_step_size(self._from_ + (self._rbutton_value * (self._to - self._from_)))
+      self._rbutton_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
       
       # run command associated with rightr button
       if self._rbutton_command is not None:
@@ -605,7 +605,7 @@ class CTkTrimSlider(CTkBaseClass):
         input_value = self._from_
       
       self._starttime_output_value = self._round_to_step_size(input_value)
-      self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
+      self._lbutton_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
       
       # ensure command isn't called twice when slider is moved,
       # only called when tkinter variable is automatically changed
@@ -619,7 +619,7 @@ class CTkTrimSlider(CTkBaseClass):
         input_value = self._starttime_output_value
       
       self._currenttime_output_value = self._round_to_step_size(input_value)
-      self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
+      self._cbutton_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
       
       # ensure command isn't called twice when slider is moved,
       # only called when tkinter variable is automatically changed
@@ -633,7 +633,7 @@ class CTkTrimSlider(CTkBaseClass):
         input_value = self._currenttime_output_value
       
       self._endtime_output_value = self._round_to_step_size(input_value)
-      self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
+      self._rbutton_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
       
       # ensure command isn't called twice when slider is moved,
       # only called when tkinter variable is automatically changed
