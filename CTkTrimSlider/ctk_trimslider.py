@@ -585,7 +585,7 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       return super().cget(attribute_name)
   
-  def get(self, v: str) -> int | float:
+  def get(self, attribute_name: str) -> int | float:
     if attribute_name == "start_time":
       return self._starttime_output_value
     elif attribute_name == "end_time":
