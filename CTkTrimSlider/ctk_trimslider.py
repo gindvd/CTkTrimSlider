@@ -55,9 +55,9 @@ class CTkTrimSlider(CTkBaseClass):
                hover: bool = True,
                orientation: str = "horizontal",
                
-               lbutton_command: Callable[[Any], int | float] | None = None,
-               rbutton_command: Callable[[Any], int | float] | None = None,
-               cbutton_command: Callable[[Any], int | float] | None = None,
+               lbutton_command: Callable[[float], None] | None = None,
+               rbutton_command: Callable[[float], None] | None = None,
+               cbutton_command: Callable[[float], None] | None = None,
                
                start_variable: tkinter.Variable | None = None,
                end_variable: tkinter.Variable | None = None,
