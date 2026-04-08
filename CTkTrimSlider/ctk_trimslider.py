@@ -101,7 +101,7 @@ class CTkTrimSlider(CTkBaseClass):
     self._outer_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if outer_button_corner_radius is None else outer_button_corner_radius
     
     if from_ >= to:
-      raise IndexError
+      raise ValueError("from_ value cannot be greater than or equal to to value!")
     
     # input and output values
     self._from_:int = from_
@@ -584,7 +584,7 @@ class CTkTrimSlider(CTkBaseClass):
       return self._currenttime_output_value
     
     else:
-      raise AttributeError
+      raise AttributeError(f"{value_name} is not attribute of CTkTrimSlider. Cannot retrieve any values.")
   
   def set(self, value_name, input_value, from_variable_callback=False) -> None:
     if value_name == "start_time":
