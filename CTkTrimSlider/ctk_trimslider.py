@@ -77,9 +77,11 @@ class CTkTrimSlider(CTkBaseClass):
         height = 500
       else:
         height = 24
-           
+    
     if outer_button_length is None:
       self._outer_button_length: int = 12
+    else:
+      self._outer_button_length = outer_button_length
     
     super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
 
@@ -106,21 +108,21 @@ class CTkTrimSlider(CTkBaseClass):
     # input and output values
     self._from_:int = from_
     self._to: int = to
-    self._number_of_steps: int  = width if number_of_steps is None else number_of_steps
-    self._starttime_output_value: int| float = 0
-    self._currenttime_output_value: int | float = 0
-    self._endtime_output_value: int | float = 0
+    self._number_of_steps: int  = 1000 if number_of_steps is None else number_of_steps
+    self._starttime_output_value: int| float = from_
+    self._currenttime_output_value: int | float = (from_ - to) / 2
+    self._endtime_output_value: int | float = to
     
     # states 
     self._state: str = state
     self._hover: bool = hover
     self._hover_state: bool = False
-    self._orientation: str = orientation
+    self._orientation: str = orientation.lower()
     
     # set initial left, right, and center button values
     self._starttime_value: float = 0
     self._endtime_value: float = 1
-    self._currenttime_value: float = 0.5
+    self._currenttime_value: float = 0
     
     # commands fro each button
     self._lbutton_command = lbutton_command
@@ -129,8 +131,8 @@ class CTkTrimSlider(CTkBaseClass):
     
     # initialize tkinter variables
     self._start_variable: tkinter.Variable | None = start_variable
-    self._end_variable: tkinter.Variable | None = end_variable
     self._center_variable: tkinter.Variable | None = center_variable
+    self._end_variable: tkinter.Variable | None = end_variable
     self._variable_callback_blocked = False
     self._variable_callback_name: list[Any | None] = [None, None, None]
     
@@ -158,14 +160,13 @@ class CTkTrimSlider(CTkBaseClass):
       self._variable_callback_name[0] = self._start_variable.trace_add("write", lambda *args: self._on_start_variable_change())
       self.set("start_time", self._start_variable.get(), from_variable_callback=True)
 
+    if self._center_variable is not None:
+      self._variable_callback_name[2] = self._center_variable.trace_add("write", lambda *args: self._on_center_variable_change())
+      self.set("current_time", self._center_variable.get(), from_variable_callback=True)
 
     if self._end_variable is not None:
       self._variable_callback_name[1] = self._end_variable.trace_add("write", lambda *args: self._on_end_variable_change())
       self.set("end_time", self._end_variable.get(), from_variable_callback=True)
-
-    if self._center_variable is not None:
-      self._variable_callback_name[2] = self._center_variable.trace_add("write", lambda *args: self._on_center_variable_change())
-      self.set("current_time", self._center_variable.get(), from_variable_callback=True)
 
   def _set_scaling(self, *args, **kwargs) -> None:
     super()._set_scaling(*args, **kwargs)
@@ -197,9 +198,9 @@ class CTkTrimSlider(CTkBaseClass):
   def _draw(self, no_color_updates: bool=False) -> None:
     super()._draw(no_color_updates)
     
-    if self._orientation.lower() == "horizontal":
+    if self._orientation == "horizontal":
       orientation = "w"
-    elif self._orientation.lower() == "vertical":
+    elif self._orientation == "vertical":
       orientation = "s"
     else:
       orientation = "w"
@@ -223,7 +224,7 @@ class CTkTrimSlider(CTkBaseClass):
     
     if no_color_updates or requires_recoloring is False:
       return
-     
+    
     self._canvas.configure(bg=self._apply_appearance_mode(self._bg_color))
 
     if self._border_color == "transparent":
@@ -345,6 +346,7 @@ class CTkTrimSlider(CTkBaseClass):
       return
 
     tags = self._canvas.gettags("current")
+    self._active = None
     
     if "left_button_parts" in tags:
       self._active = "left"
@@ -366,7 +368,7 @@ class CTkTrimSlider(CTkBaseClass):
       if self._starttime_value < 0:
         self._starttime_value = 0
       elif self._starttime_value >= self._currenttime_value:
-        self._starttime_value = abs(self._currenttime_value -  (1 / self._number_of_steps))
+        self._starttime_value = max(self._currenttime_value -  (1 / self._number_of_steps))
         
       self._starttime_output_value = self._round_to_step_size(self._from_ + (self._starttime_value * (self._to - self._from_)))
       self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
@@ -383,15 +385,15 @@ class CTkTrimSlider(CTkBaseClass):
     
     # change the center buttons location on the bar and set output values
     elif self._active == "center":
-      if self._orientation.lower() == "horizontal":
+      if self._orientation == "horizontal":
         self._currenttime_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
         self._currenttime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
       
       if self._currenttime_value <= self._starttime_value:
-        self._currenttime_value = abs(self._starttime_value + (1 / self._number_of_steps))
+        self._currenttime_value = min(self._starttime_value + (1 / self._number_of_steps))
       elif self._currenttime_value >= self._endtime_value:
-        self._currenttime_value = abs(self._endtime_value - (1 / self._number_of_steps))
+        self._currenttime_value = max(self._endtime_value - (1 / self._number_of_steps))
         
       self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._currenttime_value * (self._to - self._from_)))
       self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
@@ -408,7 +410,7 @@ class CTkTrimSlider(CTkBaseClass):
     
     # change the right buttons location on the bar and set output values
     elif self._active == "right":
-      if self._orientation.lower() == "horizontal":
+      if self._orientation == "horizontal":
         self._endtime_value = self._reverse_widget_scaling(event.x / self._current_width)
       else:
         self._endtime_value = 1 - self._reverse_widget_scaling(event.y / self._current_height)
@@ -416,7 +418,7 @@ class CTkTrimSlider(CTkBaseClass):
       if self._endtime_value >= 1:
         self._endtime_value = 1
       elif self._endtime_value <= self._currenttime_value:
-        self._endtime_value = abs(self._currenttime_value + (1 / self._number_of_steps))
+        self._endtime_value = min(self._currenttime_value + (1 / self._number_of_steps))
         
       self._endtime_output_value = self._round_to_step_size(self._from_ + (self._endtime_value * (self._to - self._from_)))
       self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
@@ -445,7 +447,7 @@ class CTkTrimSlider(CTkBaseClass):
   def bind(self, sequence: str | None= None, command: Callable[[Any], int | float] | None = None, add: str | bool = True) -> None:
     """ called on the tkinter.Canvas """
     if not (add == "+" or add is True):
-      raise ValueError("'add' argument can only be '+' or True to preserve internal callbacks")
+      add = "+"
     self._canvas.bind(sequence, command, add=True)
 
   def unbind(self, sequence: str | None = None, funcid: str | None = None) -> None:
@@ -499,10 +501,18 @@ class CTkTrimSlider(CTkBaseClass):
       require_redraw = True
 
     if "from_" in kwargs:
-      self._from_ = kwargs.pop("from_")
+      new_from = kwargs.pop("from_")
+      if new_from >= self._to:
+        raise ValueError("from_ value cannot be greater thet to value")
+      
+      self._from_ = new_from
 
     if "to" in kwargs:
-      self._to = kwargs.pop("to")
+      new_to = kwargs.pop("to")
+      if new_to <= self._from_:
+        raise ValueError("to value cannot be less than current from_ value")
+      
+      self._to = new_to
 
     if "state" in kwargs:
       self._state = kwargs.pop("state")
@@ -525,7 +535,7 @@ class CTkTrimSlider(CTkBaseClass):
       self._cbutton_command = kwargs.pop("cbutton_command")
 
     if "orientation" in kwargs:
-      self._orientation = kwargs.pop("orientation")
+      self._orientation = kwargs.pop("orientation").lower()
       require_redraw = True
 
     super().configure(require_redraw=require_redraw, **kwargs)
@@ -575,19 +585,19 @@ class CTkTrimSlider(CTkBaseClass):
     else:
       return super().cget(attribute_name)
   
-  def get(self, value_name: str) -> int | float:
-    if value_name == "start_time":
+  def get(self, v: str) -> int | float:
+    if attribute_name == "start_time":
       return self._starttime_output_value
-    elif value_name == "end_time":
+    elif attribute_name == "end_time":
       return self._endtime_output_value
-    elif value_name == "current_time":
+    elif attribute_name == "current_time":
       return self._currenttime_output_value
     
     else:
-      raise AttributeError(f"{value_name} is not attribute of CTkTrimSlider. Cannot retrieve any values.")
+      raise AttributeError(f"{attribute_name} is not attribute of CTkTrimSlider. Cannot retrieve any values.")
   
-  def set(self, value_name, input_value, from_variable_callback=False) -> None:
-    if value_name == "start_time":
+  def set(self, attribute_name, input_value, from_variable_callback=False) -> None:
+    if attribute_name == "start_time":
       if input_value > self._currenttime_output_value:
         input_value = self._currenttime_output_value
       elif input_value < self._from_:
@@ -595,8 +605,13 @@ class CTkTrimSlider(CTkBaseClass):
       
       self._starttime_output_value = self._round_to_step_size(input_value)
       self._starttime_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
+      
+      # ensure command isn't called twice when slider is moved,
+      # only called when tkinter variable is automatically changed
+      if not from_variable_callback and self._lbutton_command is not None:
+        self._lbutton_command(self._starttime_output_value)
     
-    elif value_name == "current_time":
+    elif v == "current_time":
       if input_value > self._endtime_output_value:
         input_value = self._endtime_output_value
       elif input_value < self._starttime_output_value:
@@ -604,8 +619,13 @@ class CTkTrimSlider(CTkBaseClass):
       
       self._currenttime_output_value = self._round_to_step_size(input_value)
       self._currenttime_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
+      
+      # ensure command isn't called twice when slider is moved,
+      # only called when tkinter variable is automatically changed
+      if not from_variable_callback and self._cbutton_command is not None:
+        self._cbutton_command(self._currenttime_output_value)
     
-    elif value_name == "end_time":
+    elif attribute_name == "end_time":
       if input_value > self._to:
         self._endtime_output_value = self._to
       elif input_value < self._currenttime_output_value:
@@ -613,17 +633,22 @@ class CTkTrimSlider(CTkBaseClass):
       
       self._endtime_output_value = self._round_to_step_size(input_value)
       self._endtime_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
+      
+      # ensure command isn't called twice when slider is moved,
+      # only called when tkinter variable is automatically changed
+      if not from_variable_callback and self._rbutton_command is not None:
+        self._rbutton_command(self._endtime_output_value)
     
     if not from_variable_callback:
       self._variable_callback_blocked = True
 
-      if value_name == "start_time" and self._start_variable is not None:
+      if attribute_name == "start_time" and self._start_variable is not None:
         self._start_variable.set(self._starttime_output_value)
 
-      elif value_name == "current_time" and self._center_variable is not None:
+      elif attribute_name == "current_time" and self._center_variable is not None:
         self._center_variable.set(self._currenttime_output_value)
 
-      elif value_name == "end_time" and self._end_variable is not None:
+      elif attribute_name == "end_time" and self._end_variable is not None:
         self._end_variable.set(self._endtime_output_value)
 
       self._variable_callback_blocked = False
@@ -642,7 +667,7 @@ class CTkTrimSlider(CTkBaseClass):
     self.set("start_time", self._start_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
-  def _on_current_time_change(self) -> None:
+  def _on_center_variable_change(self) -> None:
     if self._variable_callback_blocked:
       return
 
@@ -653,7 +678,7 @@ class CTkTrimSlider(CTkBaseClass):
     self.set("current_time", self._center_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
   
-  def _on_end_time_change(self) -> None:
+  def _on_end_variable_change(self) -> None:
     if self._variable_callback_blocked:
       return
     
@@ -666,14 +691,14 @@ class CTkTrimSlider(CTkBaseClass):
   
   def _destroy(self) -> None:
     # remove variable_callback from variable callbacks if variable exists
-    if self._start_variables is not None:
-      self._start_variables.trace_remove("write", self._variable_callback_name[0])
+    if self._start_variable is not None:
+      self._start_variable.trace_remove("write", self._variable_callback_name[0])
     
-    if self._end_variables is not None:
-      self._end_variables.trace_remove("write", self._variable_callback_name[1])
+    if self._end_variable is not None:
+      self._end_variable.trace_remove("write", self._variable_callback_name[1])
     
-    if self._center_variables is not None:
-      self._center_variables.trace_remove("write", self._variable_callback_name[2])
+    if self._center_variable is not None:
+      self._center_variable.trace_remove("write", self._variable_callback_name[2])
 
     super().destroy()
 
