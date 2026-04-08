@@ -611,7 +611,7 @@ class CTkTrimSlider(CTkBaseClass):
       if not from_variable_callback and self._lbutton_command is not None:
         self._lbutton_command(self._starttime_output_value)
     
-    elif v == "current_time":
+    elif attribute_name == "current_time":
       if input_value > self._endtime_output_value:
         input_value = self._endtime_output_value
       elif input_value < self._starttime_output_value:
