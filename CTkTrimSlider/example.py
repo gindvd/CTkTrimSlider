@@ -4,11 +4,11 @@ import customtkinter as ctk
 from ctk_trimslider import CTkTrimSlider
 
 def show_duration():
-  duration = end_time - start_time
+  duration = end_time.get() - start_time.get()
   duration_label.configure(text=str(duration))
   
 def show_remaining():
-  remaining = end_time - current_time
+  remaining = end_time.get() - current_time.get()
   remaining_label.configure(text=str(remaining))
 
 root = ctk.CTk()
@@ -34,7 +34,7 @@ current_label.pack(padx=30, pady=30)
 duration_label = ctk.CTkLabel(root, text="0")
 duration_label.pack(padx=30, pady=30)
 
-remaining_label = ctk.CTkLabel(root, text=str(end_time - current_time))
-remaining.pack(padx=30, pady=30)
+remaining_label = ctk.CTkLabel(root, text=str(end_time.get() - current_time.get()))
+remaining_label.pack(padx=30, pady=30)
 
 root.mainloop()
