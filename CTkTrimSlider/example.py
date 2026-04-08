@@ -22,13 +22,13 @@ trim_slider = CTkTrimSlider(root, from_=0, to=1000, number_of_steps=1000,
                             lbutton_command=show_duration, rbutton_command=show_duration, cbutton_command=show_remaining)
 trim_slider.pack(padx=30, pady=30, fill="both")
 
-start_label = ctk.CTkLabel(root, textVariable=start_time)
+start_label = ctk.CTkLabel(root, textvariable=start_time)
 start_label.pack(padx=30, pady=30)
 
-end_label = ctk.CTkLabel(root, textVariable=end_time)
+end_label = ctk.CTkLabel(root, textvariable=end_time)
 end_label.pack(padx=30, pady=30)
 
-current_label = ctk.CTkLabel(root, textVariable=current_time)
+current_label = ctk.CTkLabel(root, textvariable=current_time)
 current_label.pack(padx=30, pady=30)
 
 duration_label = ctk.CTkLabel(root, text="0")
