@@ -14,7 +14,7 @@ from customtkinter.windows.widgets.theme import ThemeManager
 from customtkinter.windows.widgets.core_rendering import CTkCanvas
 from customtkinter.windows.widgets.core_widget_classes import CTkBaseClass
 
-from custom_rendering import CustomDrawEngine
+from CTkTrimSlider.custom_rendering import CustomDrawEngine
 
 class CTkTrimSlider(CTkBaseClass):
   
@@ -38,7 +38,6 @@ class CTkTrimSlider(CTkBaseClass):
                
                outer_button_length: int | None = None,
                outer_button_corner_radius: int | None = None,
-              
                center_button_corner_radius: int | None = None,
                
                bg_color: str | tuple[str] = "transparent",

@@ -1,7 +1,7 @@
 import tkinter
 import customtkinter as ctk
 
-from ctk_trimslider import CTkTrimSlider
+from CTkTrimSlider.ctk_trimslider import CTkTrimSlider
 
 def show_duration(value):
   duration = end_value.get() - start_value.get()
