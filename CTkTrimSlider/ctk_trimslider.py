@@ -136,19 +136,19 @@ class CTkTrimSlider(CTkBaseClass):
     self._variable_callback_blocked = False
     self._variable_callback_name: list[Any | None] = [None, None, None]
     
-    # the currentbutton being clicked on by mouse
-    self._active: str | None = None
-    
-    self.grid_rowconfigure(0, weight=1)
-    self.grid_columnconfigure(0, weight=1)
+    # change variable individually
+    if self._start_variable is not None:
+      self._variable_callback_name[0] = self._start_variable.trace_add("write", lambda *args: self._on_start_variable_change())
+      self.set("start_time", self._start_variable.get(), from_variable_callback=True)
 
-    self._canvas = CTkCanvas(master=self,
-                             highlightthickness=0,
-                             width=self._apply_widget_scaling(self._current_width),
-                             height=self._apply_widget_scaling(self._current_height))
+    if self._end_variable is not None:
+      self._variable_callback_name[1] = self._end_variable.trace_add("write", lambda *args: self._on_end_variable_change())
+      self.set("end_time", self._end_variable.get(), from_variable_callback=True)
     
-    self._canvas.grid(column=0, row=0, rowspan=1, columnspan=1, sticky="nswe")
-
+    if self._center_variable is not None:
+      self._variable_callback_name[2] = self._center_variable.trace_add("write", lambda *args: self._on_center_variable_change())
+      self.set("current_time", self._center_variable.get(), from_variable_callback=True)
+    
     self._draw_engine = CustomDrawEngine(self._canvas)
     self._draw()
     
