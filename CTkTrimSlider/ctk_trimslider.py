@@ -30,7 +30,7 @@ class CTkTrimSlider(CTkBaseClass):
   """   
 
   def __init__(self,
-               master: Any,
+               master: object,
                width: int | None = None,
                height: int | None = None,
                corner_radius: int | None = None,
@@ -115,7 +115,7 @@ class CTkTrimSlider(CTkBaseClass):
     if self._number_of_steps <= 1:
       raise ValueError("number_of_steps must be any value above 1")
     
-    self._step_size = (self._to + self._from_) / self._number_of_steps
+    self._step_size: float = (self._to + self._from_) / self._number_of_steps
     
     # output values
     self._starttime_output_value: int| float = from_
@@ -217,21 +217,20 @@ class CTkTrimSlider(CTkBaseClass):
       orientation = "w"
 
     requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(
-                                                width = self._apply_widget_scaling(self._current_width), 
-                                                height = self._apply_widget_scaling(self._current_height),
-                                                corner_radius = self._apply_widget_scaling(self._corner_radius),
-                                                border_width = self._apply_widget_scaling(self._border_width),
-                                                
-                                                outer_button_length = self._apply_widget_scaling(self._outer_button_length),
-                                                outer_button_corner_radius = self._apply_widget_scaling(self._outer_button_corner_radius),
+                                                          width = self._apply_widget_scaling(self._current_width), 
+                                                          height = self._apply_widget_scaling(self._current_height),
+                                                          corner_radius = self._apply_widget_scaling(self._corner_radius),
+                                                          border_width = self._apply_widget_scaling(self._border_width),
+                                                          
+                                                          outer_button_length = self._apply_widget_scaling(self._outer_button_length),
+                                                          outer_button_corner_radius = self._apply_widget_scaling(self._outer_button_corner_radius),
+                                                          center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
 
-                                                center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
-
-                                                lbutton_value = self._lbutton_value,
-                                                rbutton_value = self._rbutton_value,
-                                                cbutton_value = self._cbutton_value,
-                                                orientation = orientation
-                                            )
+                                                          lbutton_value = self._lbutton_value,
+                                                          rbutton_value = self._rbutton_value,
+                                                          cbutton_value = self._cbutton_value,
+                                                          orientation = orientation
+                                                      )
     
     if no_color_updates or requires_recoloring is False:
       return
