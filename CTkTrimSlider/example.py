@@ -32,7 +32,7 @@ current_label = ctk.CTkLabel(root, textvariable=current_time)
 current_label.pack(padx=30, pady=30)
 
 duration_label = ctk.CTkLabel(root, text="0")
-duration.pack(padx=30, pady=30)
+duration_label.pack(padx=30, pady=30)
 
 remaining_label = ctk.CTkLabel(root, text=str(end_time - current_time))
 remaining.pack(padx=30, pady=30)
