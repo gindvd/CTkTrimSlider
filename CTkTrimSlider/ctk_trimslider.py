@@ -173,7 +173,8 @@ class CTkTrimSlider(CTkBaseClass):
 
     self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
                             height=self._apply_widget_scaling(self._desired_height))
-    self._draw()
+
+    self._draw(no_color_updates=True)
 
   def _set_dimensions(self, width=None, height=None) -> None:
     super()._set_dimensions(width, height)
@@ -206,8 +207,8 @@ class CTkTrimSlider(CTkBaseClass):
       orientation = "w"
 
     requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(
-                                                width = self._apply_widget_scaling(self._desired_width), 
-                                                height = self._apply_widget_scaling(self._desired_height),
+                                                width = self._apply_widget_scaling(self._current_width), 
+                                                height = self._apply_widget_scaling(self._current_height),
                                                 corner_radius = self._apply_widget_scaling(self._corner_radius),
                                                 border_width = self._apply_widget_scaling(self._border_width),
                                                 
