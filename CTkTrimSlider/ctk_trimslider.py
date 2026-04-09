@@ -358,7 +358,6 @@ class CTkTrimSlider(CTkBaseClass):
       return
 
     tags = self._canvas.gettags("current")
-    self._active = None
     
     if "left_button_parts" in tags:
       self._active = "left"
