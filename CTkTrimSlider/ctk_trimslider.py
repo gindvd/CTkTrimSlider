@@ -109,7 +109,7 @@ class CTkTrimSlider(CTkBaseClass):
 
     # values under 1 causes button values to be neegative which leads to draw errors
     # also doesn't make sense to have 1 step
-    if self._number_of_steps <= 1:
+    if number_of_steps <= 1:
       raise ValueError("number_of_steps must be any value above 1")
     
     self._number_of_steps: int  = number_of_steps
