@@ -49,7 +49,7 @@ class CTkTrimSlider(CTkBaseClass):
                
                from_: int = 0,
                to: int = 1,
-               number_of_steps: int | None = None,
+               number_of_steps: int = 1000,
                state: str = "normal",
                hover: bool = True,
                orientation: str = "horizontal",
@@ -106,14 +106,13 @@ class CTkTrimSlider(CTkBaseClass):
     # input and output values
     self._from_:int = from_
     self._to: int = to
-    
-    self._number_of_steps: int  = 1000 if number_of_steps is None else number_of_steps
-    
+
     # values under 1 causes button values to be neegative which leads to draw errors
     # also doesn't make sense to have 1 step
     if self._number_of_steps <= 1:
       raise ValueError("number_of_steps must be any value above 1")
     
+    self._number_of_steps: int  = number_of_steps
     self._step_size: float = (self._to + self._from_) / self._number_of_steps
     
     # output values
