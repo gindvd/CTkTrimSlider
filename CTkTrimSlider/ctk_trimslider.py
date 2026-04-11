@@ -369,6 +369,7 @@ class CTkTrimSlider(CTkBaseClass):
 
   def _left_button_move_handler(self, event=0) -> None:
     # handles the calculations to move the left button
+    move_cbutton = False
 
     if self._orientation == "horizontal":
       self._lbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
@@ -380,16 +381,23 @@ class CTkTrimSlider(CTkBaseClass):
 
     if not self._button_blocking:
       if self._lbutton_value > self._rbutton_value:
-        self._lbutton_value = self._rbutton_value 
-
+        self._lbutton_value = self._rbutton_value
+      
+      if self._lbutton_value > self._cbutton_value:
+        move_cbutton = True
+      
     # left button cannot move center button if button blocking true
-    else:    
+    else:
       if self._lbutton_value > self._cbutton_value:
         self._lbutton_value = self._cbutton_value
       
     self._starttime_output_value = self._round_to_step_size(self._from_ + (self._lbutton_value * (self._to - self._from_)))
     self._lbutton_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
-  
+    
+    if move_cbutton:
+      self._currenttime_output_value = self._starttime_output_value
+      self._cbutton_value = self._lbutton_value
+
     # run command associated with left button
     if self._lbutton_command is not None:
       self._lbutton_command(self._starttime_output_value)
@@ -400,10 +408,17 @@ class CTkTrimSlider(CTkBaseClass):
       self._start_variable.set(self._starttime_output_value)
       self._variable_callback_blocked = False
     
+    if self._center_variable is not None and move_cbutton:
+      self._variable_callback_blocked = True
+      self._center_variable.set(self._currenttime_output_value)
+      self._variable_callback_blocked = False
+
+    
     self._draw(no_color_updates=False)
 
   def _right_button_move_handler(self, event=0) -> None:
     # handles the calculations to move the right button
+    move_cbutton = False
     
     if self._orientation == "horizontal":
         self._rbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
@@ -415,7 +430,10 @@ class CTkTrimSlider(CTkBaseClass):
 
     if not self._button_blocking:
       if self._rbutton_value < self._lbutton_value:
-        self._rbutton_value = self._lbutton_value 
+        self._rbutton_value = self._lbutton_value
+
+      if self._rbutton_value < self._cbutton_value:
+        move_cbutton = True  
 
     # right button cannot move center button if button blocking true
     else:    
@@ -428,11 +446,20 @@ class CTkTrimSlider(CTkBaseClass):
     # run command associated with rightr button
     if self._rbutton_command is not None:
       self._rbutton_command(self._endtime_output_value)
-    
+
+    if move_cbutton:
+      self._currenttime_output_value = self._endtime_output_value
+      self._cbutton_value = self._rbutton_value
+        
     # set right varaibles
     if self._end_variable is not None:
       self._variable_callback_blocked = True
       self._end_variable.set(self._endtime_output_value)
+      self._variable_callback_blocked = False
+    
+    if self._center_variable is not None and move_cbutton:
+      self._variable_callback_blocked = True
+      self._center_variable.set(self._currenttime_output_value)
       self._variable_callback_blocked = False
     
     self._draw(no_color_updates=False)
@@ -697,8 +724,7 @@ class CTkTrimSlider(CTkBaseClass):
       self._variable_callback_blocked = False
     
     self._draw(no_color_updates=False)
-  
-  # sets internal variables base on external variable change
+
   def _on_start_variable_change(self) -> None:
     if self._variable_callback_blocked:
       return
