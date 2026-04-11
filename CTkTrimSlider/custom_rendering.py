@@ -85,6 +85,55 @@ class CustomDrawEngine(DrawEngine):
     requires_recoloring: bool = self._DrawEngine__draw_rounded_progress_bar_with_border_font_shapes(width=width, height=height, border_width=border_width, corner_radius=corner_radius, inner_corner_radius=inner_corner_radius,
                                                                                    progress_value_1=lbutton_value, progress_value_2=rbutton_value, orientation=orientation)  
     
+    if orientation == "w":
+      lbutton_raw_pos = outer_button_length / 2 + lbutton_value * (width - outer_button_length - 1)
+      cbutton_raw_pos = outer_button_length / 2 + cbutton_value * (width - outer_button_length - 1)
+      rbutton_raw_pos = outer_button_length / 2 + rbutton_value * (width - outer_button_length - 1)
+
+      offset = outer_button_length
+
+      lbutton_x_pos = lbutton_raw_pos
+      cbutton_x_pos = max(cbutton_raw_pos, lbutton_x_pos + offset)
+      rbutton_x_pos = max(rbutton_raw_pos, cbutton_x_pos + offset)
+
+      max_x = width - outer_button_length / 2
+
+      if rbutton_x_pos > max_x:
+        rbutton_x_pos = max_x
+        cbutton_x_pos = min(cbutton_x_pos, rbutton_x_pos - offset)
+        lbutton_x_pos = min(lbutton_x_pos, cbutton_x_pos - offset)
+
+      min_x = outer_button_length / 2
+
+      if lbutton_x_pos < min_x:
+        lbutton_x_pos = min_x
+        cbutton_x_pos = max(cbutton_x_pos, lbutton_x_pos + offset)
+        rbutton_x_pos = max(rbutton_x_pos, cbutton_x_pos + offset)
+
+    elif orientation == "s":
+      lbutton_raw_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - lbutton_value)
+      cbutton_raw_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - cbutton_value)
+      rbutton_raw_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - rbutton_value)
+
+      offset = outer_button_length
+
+      lbutton_y_pos = lbutton_raw_pos
+      cbutton_y_pos = max(cbutton_raw_pos, lbutton_y_pos + offset)
+      rbutton_y_pos = max(rbutton_raw_pos, cbutton_y_pos + offset)
+
+      max_y = height - outer_button_length / 2
+
+      if rbutton_y_pos > max_y:
+        rbutton_y_pos = max_y
+        cbutton_y_pos = min(cbutton_y_pos, rbutton_y_pos - offset)
+        lbutton_y_pos = min(lbutton_y_pos, cbutton_y_pos - offset)
+
+      min_y = outer_button_length / 2
+
+      if lbutton_y_pos < min_y:
+        lbutton_y_pos = min_y
+        cbutton_y_pos = max(cbutton_y_pos, lbutton_y_pos + offset)
+        rbutton_y_pos = max(rbutton_y_pos, cbutton_y_pos + offset)
     
     # create the left slider button as a rectangle with round corners  
     if not self._canvas.find_withtag("lbutton_oval_1_a"):
@@ -108,8 +157,6 @@ class CustomDrawEngine(DrawEngine):
     # set positions of circles and rectangles
     # draws button on horizontal progress bar
     if orientation == "w":
-      lbutton_x_pos =  outer_button_length / 2 + lbutton_value * (width - outer_button_length - 1)
-      
       self._canvas.coords("lbutton_oval_1_a", lbutton_x_pos, outer_button_corner_radius, outer_button_corner_radius)
       self._canvas.coords("lbutton_oval_1_b", lbutton_x_pos, outer_button_corner_radius, outer_button_corner_radius)
       self._canvas.coords("lbutton_oval_2_a", lbutton_x_pos, height - outer_button_corner_radius, outer_button_corner_radius)
@@ -123,8 +170,6 @@ class CustomDrawEngine(DrawEngine):
 
     # draws button on vertical progress bar
     elif orientation == "s":
-      lbutton_y_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - lbutton_value)
-      
       self._canvas.coords("lbutton_oval_1_a", outer_button_corner_radius, lbutton_y_pos, outer_button_corner_radius)
       self._canvas.coords("lbutton_oval_1_b", outer_button_corner_radius, lbutton_y_pos, outer_button_corner_radius)
       self._canvas.coords("lbutton_oval_2_a", width - outer_button_corner_radius, lbutton_y_pos, outer_button_corner_radius)
@@ -158,8 +203,6 @@ class CustomDrawEngine(DrawEngine):
     # set positions of circles and rectangles
     # draws button on horizontal progress bar
     if orientation == "w":
-      rbutton_x_pos =  outer_button_length / 2 + rbutton_value * (width - outer_button_length - 1)
-      
       self._canvas.coords("rbutton_oval_1_a", rbutton_x_pos, outer_button_corner_radius, outer_button_corner_radius)
       self._canvas.coords("rbutton_oval_1_b", rbutton_x_pos, outer_button_corner_radius, outer_button_corner_radius)
       self._canvas.coords("rbutton_oval_2_a", rbutton_x_pos, height - outer_button_corner_radius, outer_button_corner_radius)
@@ -172,9 +215,7 @@ class CustomDrawEngine(DrawEngine):
                           height - outer_button_corner_radius)
 
     # draws button on vertical progress bar
-    elif orientation == "s":
-      rbutton_y_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - rbutton_value)
-      
+    elif orientation == "s":      
       self._canvas.coords("rbutton_oval_1_a", outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
       self._canvas.coords("rbutton_oval_1_b", outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
       self._canvas.coords("rbutton_oval_2_a", width - outer_button_corner_radius, rbutton_y_pos, outer_button_corner_radius)
@@ -195,15 +236,11 @@ class CustomDrawEngine(DrawEngine):
     # set positions of circles and rectangles
     # draws button on horizontal progress bar
     if orientation == "w":
-      cbutton_x_pos =  outer_button_length / 2 + cbutton_value * (width - outer_button_length - 1)
-      
       self._canvas.coords("cbutton_oval_1_a", cbutton_x_pos, height / 2, outer_button_corner_radius)
       self._canvas.coords("cbutton_oval_1_b", cbutton_x_pos, height / 2, outer_button_corner_radius)
 
     # draws button on vertical progress bar
-    elif orientation == "s":
-      cbutton_y_pos = (outer_button_length / 2) + (height - outer_button_length) * (1 - cbutton_value)
-      
+    elif orientation == "s":      
       self._canvas.coords("cbutton_oval_1_a", width / 2, cbutton_y_pos, outer_button_corner_radius)
       self._canvas.coords("cbutton_oval_1_b", width / 2, cbutton_y_pos, outer_button_corner_radius)
     
