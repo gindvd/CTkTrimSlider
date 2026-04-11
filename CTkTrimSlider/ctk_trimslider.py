@@ -365,8 +365,7 @@ class CTkTrimSlider(CTkBaseClass):
       self._center_button_move_handler(event)
     elif "right_button_parts" in tags:
       self._right_button_move_handler(event)
-    
-
+  
   def _left_button_move_handler(self, event=0) -> None:
     # handles the calculations to move the left button
     move_cbutton = False
