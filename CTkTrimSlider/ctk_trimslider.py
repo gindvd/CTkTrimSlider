@@ -469,6 +469,19 @@ class CTkTrimSlider(CTkBaseClass):
     value = self._from_ + step_index * self._step_size
     return value
 
+  def _destroy(self) -> None:
+    # remove variable_callback from variable callbacks if variable exists
+    if self._start_variable is not None and self._variable_callback_name[0] is not None:
+      self._start_variable.trace_remove("write", self._variable_callback_name[0])
+    
+    if self._end_variable is not None and self._variable_callback_name[1] is not None:
+      self._end_variable.trace_remove("write", self._variable_callback_name[1])
+    
+    if self._center_variable is not None and self._variable_callback_name[2] is not None:
+      self._center_variable.trace_remove("write", self._variable_callback_name[2])
+
+    super().destroy()
+
   def bind(self, sequence: str | None= None, command: Callable[[Any], int | float] | None = None, add: str | bool = True) -> None:
     """ called on the tkinter.Canvas """
     if not (add == "+" or add is True):
@@ -718,19 +731,6 @@ class CTkTrimSlider(CTkBaseClass):
     self._variable_callback_blocked = True
     self.set("end_time", self._end_variable.get(), from_variable_callback=True)
     self._variable_callback_blocked = False
-  
-  def _destroy(self) -> None:
-    # remove variable_callback from variable callbacks if variable exists
-    if self._start_variable is not None and self._variable_callback_name[0] is not None:
-      self._start_variable.trace_remove("write", self._variable_callback_name[0])
-    
-    if self._end_variable is not None and self._variable_callback_name[1] is not None:
-      self._end_variable.trace_remove("write", self._variable_callback_name[1])
-    
-    if self._center_variable is not None and self._variable_callback_name[2] is not None:
-      self._center_variable.trace_remove("write", self._variable_callback_name[2])
-
-    super().destroy()
 
   def focus(self) -> Any:
     return self._canvas.focus()
