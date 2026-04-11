@@ -62,6 +62,7 @@ class CTkTrimSlider(CTkBaseClass):
                end_variable: tkinter.Variable | None = None,
                center_variable: tkinter.Variable | None = None,
                
+               button_blocking: bool = False,
                **kwargs) -> None:
   
      # set default dimensions according to orientation
@@ -144,8 +145,9 @@ class CTkTrimSlider(CTkBaseClass):
     self._variable_callback_blocked: bool = False
     self._variable_callback_name: list[str | None] = [None, None, None]
     
-    # the currentbutton being clicked on by mouse
-    self._active: str | None = None
+    # when button blocking is true, right and left buttons cannot move past the center buttons position
+    # when false, moving left and right button can chenge the position and values of the center button
+    self._button_blocking: bool = button_blocking 
     
     self.grid_rowconfigure(0, weight=1)
     self.grid_columnconfigure(0, weight=1)
@@ -296,9 +298,7 @@ class CTkTrimSlider(CTkBaseClass):
       self._canvas.bind("<Button-1>", self._clicked)
     if sequence is None or sequence == "<B1-Motion>":
       self._canvas.bind("<B1-Motion>", self._clicked)
-    if sequence is None or sequence == "ButtonRelease-1":
-      self._canvas.bind("<ButtonRelease-1>", lambda x: setattr(self, "_active", None))
-  
+
   def _lbutton_on_enter(self, event=0) -> None:
     if self._state != "normal":
       return
@@ -360,94 +360,108 @@ class CTkTrimSlider(CTkBaseClass):
     tags = self._canvas.gettags("current")
     
     if "left_button_parts" in tags:
-      self._active = "left"
+      self._left_button_move_handler(event)
     elif "center_button_parts" in tags:
-      self._active = "center"
+      self._center_button_move_handler(event)
     elif "right_button_parts" in tags:
-      self._active = "right"
+      self._right_button_move_handler(event)
+    
+
+  def _left_button_move_handler(self, event=0) -> None:
+    # handles the calculations to move the left button
+
+    if self._orientation == "horizontal":
+      self._lbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
     else:
-      self._active = None 
-  
-    if self._active is not None:
-      self._move_handle(event)
-  
-  def _move_handle(self, event=0) -> None:
-    # change the left buttons location on the bar and set output values
-    if self._active == "left":
-      if self._orientation == "horizontal":
-        self._lbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
-      else:
-        self._lbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
-      
-      if self._lbutton_value < 0:
-        self._lbutton_value = 0
-      elif self._lbutton_value > self._cbutton_value:
+      self._lbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
+    
+    if self._lbutton_value < 0:
+      self._lbutton_value = 0
+
+    if not self._button_blocking:
+      if self._lbutton_value > self._rbutton_value:
+        self._lbutton_value = self._rbutton_value 
+
+    # left button cannot move center button if button blocking true
+    else:    
+      if self._lbutton_value > self._cbutton_value:
         self._lbutton_value = self._cbutton_value
-        
-      self._starttime_output_value = self._round_to_step_size(self._from_ + (self._lbutton_value * (self._to - self._from_)))
-      self._lbutton_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
       
-      # run command associated with left button
-      if self._lbutton_command is not None:
-        self._lbutton_command(self._starttime_output_value)
-      
-      # set left varaibles
-      if self._start_variable is not None:
-        self._variable_callback_blocked = True
-        self._start_variable.set(self._starttime_output_value)
-        self._variable_callback_blocked = False
+    self._starttime_output_value = self._round_to_step_size(self._from_ + (self._lbutton_value * (self._to - self._from_)))
+    self._lbutton_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
+  
+    # run command associated with left button
+    if self._lbutton_command is not None:
+      self._lbutton_command(self._starttime_output_value)
     
-    # change the center buttons location on the bar and set output values
-    elif self._active == "center":
-      if self._orientation == "horizontal":
-        self._cbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
-      else:
-        self._cbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
-      
-      if self._cbutton_value < self._lbutton_value:
-        self._cbutton_value = self._lbutton_value 
-      elif self._cbutton_value > self._rbutton_value:
-        self._cbutton_value = self._rbutton_value 
-        
-      self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._cbutton_value * (self._to - self._from_)))
-      self._cbutton_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
-      
-      # run command associated with center button
-      if self._cbutton_command is not None:
-        self._cbutton_command(self._currenttime_output_value)
-      
-      # set center varaibles
-      if self._center_variable is not None:
-        self._variable_callback_blocked = True
-        self._center_variable.set(self._currenttime_output_value)
-        self._variable_callback_blocked = False
+    # set left varaibles
+    if self._start_variable is not None:
+      self._variable_callback_blocked = True
+      self._start_variable.set(self._starttime_output_value)
+      self._variable_callback_blocked = False
     
-    # change the right buttons location on the bar and set output values
-    elif self._active == "right":
-      if self._orientation == "horizontal":
+    self._draw(no_color_updates=False)
+
+  def _right_button_move_handler(self, event=0) -> None:
+    # handles the calculations to move the right button
+    
+    if self._orientation == "horizontal":
         self._rbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
-      else:
-        self._rbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
-      
-      if self._rbutton_value >= 1:
+    else:
+      self._rbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
+
+    if self._rbutton_value >= 1:
         self._rbutton_value = 1
-      elif self._rbutton_value < self._cbutton_value:
+
+    if not self._button_blocking:
+      if self._rbutton_value < self._lbutton_value:
+        self._rbutton_value = self._lbutton_value 
+
+    # right button cannot move center button if button blocking true
+    else:    
+      if self._rbutton_value < self._cbutton_value:
         self._rbutton_value = self._cbutton_value 
         
-      self._endtime_output_value = self._round_to_step_size(self._from_ + (self._rbutton_value * (self._to - self._from_)))
-      self._rbutton_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
+    self._endtime_output_value = self._round_to_step_size(self._from_ + (self._rbutton_value * (self._to - self._from_)))
+    self._rbutton_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
       
-      # run command associated with rightr button
-      if self._rbutton_command is not None:
-        self._rbutton_command(self._endtime_output_value)
-      
-      # set right varaibles
-      if self._end_variable is not None:
-        self._variable_callback_blocked = True
-        self._end_variable.set(self._endtime_output_value)
-        self._variable_callback_blocked = False
+    # run command associated with rightr button
+    if self._rbutton_command is not None:
+      self._rbutton_command(self._endtime_output_value)
     
-    # redraws the slider with the click button moved to it's new value
+    # set right varaibles
+    if self._end_variable is not None:
+      self._variable_callback_blocked = True
+      self._end_variable.set(self._endtime_output_value)
+      self._variable_callback_blocked = False
+    
+    self._draw(no_color_updates=False)
+  
+  def _center_button_move_handler(self, event=0) -> None:
+    # change the center buttons location on the bar and set output values
+    if self._orientation == "horizontal":
+      self._cbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
+    else:
+      self._cbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
+    
+    if self._cbutton_value < self._lbutton_value:
+      self._cbutton_value = self._lbutton_value 
+    elif self._cbutton_value > self._rbutton_value:
+      self._cbutton_value = self._rbutton_value 
+      
+    self._currenttime_output_value = self._round_to_step_size(self._from_ + (self._cbutton_value * (self._to - self._from_)))
+    self._cbutton_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
+    
+    # run command associated with center button
+    if self._cbutton_command is not None:
+      self._cbutton_command(self._currenttime_output_value)
+    
+    # set center varaibles
+    if self._center_variable is not None:
+      self._variable_callback_blocked = True
+      self._center_variable.set(self._currenttime_output_value)
+      self._variable_callback_blocked = False
+    
     self._draw(no_color_updates=False)
   
   def _round_to_step_size(self, value) -> float:
