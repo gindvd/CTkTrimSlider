@@ -675,11 +675,6 @@ class CTkTrimSlider(CTkBaseClass):
       self._starttime_output_value = self._round_to_step_size(input_value)
       self._lbutton_value = (self._starttime_output_value - self._from_) / (self._to - self._from_)
       
-      # ensure command isn't called twice when slider is moved,
-      # only called when tkinter variable is automatically changed
-      if not from_variable_callback and self._lbutton_command is not None:
-        self._lbutton_command(self._starttime_output_value)
-    
     elif attribute_name == "current_time":
       if input_value > self._endtime_output_value:
         input_value = self._endtime_output_value 
@@ -689,11 +684,6 @@ class CTkTrimSlider(CTkBaseClass):
       self._currenttime_output_value = self._round_to_step_size(input_value)
       self._cbutton_value = (self._currenttime_output_value - self._from_) / (self._to - self._from_)
       
-      # ensure command isn't called twice when slider is moved,
-      # only called when tkinter variable is automatically changed
-      if not from_variable_callback and self._cbutton_command is not None:
-        self._cbutton_command(self._currenttime_output_value)
-    
     elif attribute_name == "end_time":
       if input_value > self._to :
         input_value = self._to
@@ -703,11 +693,6 @@ class CTkTrimSlider(CTkBaseClass):
       self._endtime_output_value = self._round_to_step_size(input_value)
       self._rbutton_value = (self._endtime_output_value - self._from_) / (self._to - self._from_)
       
-      # ensure command isn't called twice when slider is moved,
-      # only called when tkinter variable is automatically changed
-      if not from_variable_callback and self._rbutton_command is not None:
-        self._rbutton_command(self._endtime_output_value)
-    
     if not from_variable_callback:
       self._variable_callback_blocked = True
 
