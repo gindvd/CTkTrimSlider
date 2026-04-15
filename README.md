@@ -65,7 +65,6 @@ root.mainloop()
 | Parameters | Details |
 |--------|----------|
 |master	| root window, can be _tkinter.Frame_ or _CTkFrame_|
-
 |width	| slider width in px|
 |height | slider height in px|
 |corner_radius| corner roundness of the slider |
