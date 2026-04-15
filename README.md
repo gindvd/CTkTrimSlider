@@ -6,6 +6,7 @@ Download the source code, paste the `CTkTrimSlider` folder in the directory wher
 
 ## Example
 ```python
+import tkinter
 import customtkinter as ctk
 
 from CTkTrimSlider.ctk_trimslider import CTkTrimSlider
@@ -21,19 +22,19 @@ def show_remaining(value):
 root = ctk.CTk()
 
 start_value = tkinter.DoubleVar(root, value=0)
-end_value = tkinter.DoubleVar(root, value=1000)
-current_value = tkinter.DoubleVar(root, value=500)
+end_value = tkinter.DoubleVar(root, value=100)
+current_value = tkinter.DoubleVar(root, value=50)
 
 trim_slider = CTkTrimSlider(root, 
-                           from_=0, 
-                           to=100, 
-                           number_of_steps=100,
-                           start_variable=start_value, 
-                           end_variable=end_value, 
-                           center_variable=current_value,
-                           lbutton_command=show_duration, 
-                           rbutton_command=show_duration, 
-                           cbutton_command=show_remaining)
+                            from_=0, 
+                            to=100, 
+                            number_of_steps=100,
+                            left_button_var=start_value, 
+                            right_button_var=end_value, 
+                            center_button_var=current_value,
+                            left_button_command=show_duration, 
+                            right_button_command=show_duration, 
+                            center_button_command=show_remaining)
 
 trim_slider.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky="nswe")
 
@@ -64,26 +65,33 @@ root.mainloop()
 | Parameters | Details |
 |--------|----------|
 |master	| root window, can be _tkinter.Frame_ or _CTkFrame_|
-|command	| callback function, receives slider value as argument, two separate commands can be given by `command=(cmd1, cmd2)`|
-|variables	| tuple: set two tkinter.IntVar or tkinter.DoubleVar objects |
+
 |width	| slider width in px|
 |height | slider height in px|
 |corner_radius| corner roundness of the slider |
 |border_width	| space around the slider rail in px |
-|from_	| lower slider value |
-|to	| upper slider value |
-|number_of_steps |	number of steps in which the sliders can be positioned |
+|outer_button_length | thickness of the two outer buttons in px |
+|outer_button_corner_radius | corner roundness of the two outer buttons in px  |
+|outer_button_length | corner roundness of center outer buttons in px |
+|fg_color	| background color, default as transparent |
 |fg_color	| foreground color, tuple: (light_color, dark_color) or single color |
 |progress_color	| tuple: (light_color, dark_color) or single color or "transparent", color of the slider line before the button |
 |border_color	| slider border color, tuple: (light_color, dark_color) or single color or "transparent", default is "transparent"|
 |button_color |	color of the slider buttons, tuple: (light_color, dark_color) or single color or **((light_color_1, dark_color_1), (light_color_2, light_color_2)) for separate button colors** |
 |button_hover_color |	hover color, tuple: (light_color, dark_color) or single color|
-|button_width | width of the buttons in px |
-|button_length | length of the buttons in px|
-|button_corner_radius | corner roundness of the buttons |
+|from_	| lower slider value |
+|to	| upper slider value |
+|number_of_steps |	number of steps in which the sliders can be positioned |
 |orientation | "horizontal" (standard) or "vertical" |
 |state	| "normal" or "disabled" (not clickable) |
 |hover | bool, enable/disable hover effect, default is True |
+|left_button_command	| callback function associated with the left button(bottom button in vertical orientation), receives left slider button value as argument|
+|right_button_command	| callback function associated with the right button(upper button in vertical orientation), receives right slider button value as argument|
+|center_button_command	| callback function associated with the center button, receives center slider button value as argument|
+|left_button_var	| tk.IntVar or tk.DoubleVar, vlaue of the left (bottom) slider button |
+|right_button_var	| tk.IntVar or tk.DoubleVar, vlaue of the right (upper) slider button |
+|center_button_var	| tk.IntVar or tk.DoubleVar, vlaue of the centerslider button |
+|button_blocking  | bool, set to true to keep outer (left / bottom and right / upper) buttons from moving the center button, keep false to allow outer buttons to move center button |
 
 ## Methods:
 - **.configure(attribute=value, ...)**
@@ -92,19 +100,21 @@ root.mainloop()
     ```python
      range_slider.configure(fg_color=..., progress_color=..., button_color=..., ...)
     ```
-- **.set([value, value])**
+- **.set(attribute_name, input_value,)**
 
-   Set sliders to specific float value.
+   attribute_name can be  "left_value", "right_value, or "center_value"
 
-- **.get()**
+   Will set the left, right, or center buttons value, and position depending on the attribute name.
 
-   Get current values of slider.
+- **.get(attribute_name)**
+
+   attribute_name can be  "left_value", "right_value, or "center_value"
+
+   Get cthe value of the lef, right, or center button of slider.
    
 - **.cget("attribute_name")**
 
    Get any attribute value.
    
 ### More Details
-This widget works just like the normal customtkinter slider widget, but it has dual slider-heads instead of one. A special thanks to [EN20M](https://github.com/EN20M) for providing the custom DrawEngine for rangeslider. 
-Follow me for more stuff like this: [`Akascape`](https://github.com/Akascape/)
-### That's all, hope it will help!
+For a more extensive example using this widget and its full capabilities, please visit [GUI_Video_Compressor/video_trimmer_widget](https://github.com/gindvd/GUI_Video_Compressor/blob/main/src/components/video_trimmer.py)
