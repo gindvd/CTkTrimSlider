@@ -14,12 +14,20 @@ def show_remaining(value):
 root = ctk.CTk()
 
 start_value = tkinter.DoubleVar(root, value=0)
-end_value = tkinter.DoubleVar(root, value=1000)
-current_value = tkinter.DoubleVar(root, value=500)
+end_value = tkinter.DoubleVar(root, value=100)
+current_value = tkinter.DoubleVar(root, value=50)
 
-trim_slider = CTkTrimSlider(root, from_=0, to=1000, number_of_steps=1000,
-                            start_variable=start_value, end_variable=end_value, center_variable=current_value,
-                            lbutton_command=show_duration, rbutton_command=show_duration, cbutton_command=show_remaining)
+trim_slider = CTkTrimSlider(root, 
+                            from_=0, 
+                            to=100, 
+                            number_of_steps=100,
+                            left_button_var=start_value, 
+                            right_button_var=end_value, 
+                            center_button_var=current_value,
+                            left_button_command=show_duration, 
+                            right_button_command=show_duration, 
+                            center_button_command=show_remaining)
+
 trim_slider.grid(row=0, column=0, columnspan=2, padx=5, pady=5, sticky="nswe")
 
 ctk.CTkLabel(root, text="Start value:").grid(row=1,column=0, padx=5, pady=5)
