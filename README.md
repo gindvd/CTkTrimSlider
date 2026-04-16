@@ -2,7 +2,9 @@
 **A video trim slider widget made for [customtkinter](https://github.com/TomSchimansky/CustomTkinter)**
 
 
-Download the source code, paste the `CTkTrimSlider` folder in the directory where your program is present.
+
+## Installation
+Download the [source code](https://github.com/gindvd/CTkTrimSlider/archive/refs/heads/main.zip), paste the `CTkTrimSlider` folder in the directory where your program is present.
 
 ## Example
 ```python
