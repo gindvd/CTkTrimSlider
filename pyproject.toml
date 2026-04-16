@@ -4,13 +4,27 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "CTkTrimSlider"
-version = "0.1.0"
+version = "1.0.2"
 description = "A video trim slider widget for customtkinter"
 readme = "README.md"
 authors = [
   {name = "David Gingerich", email = "gingerichdvd@gmail.com"}
 ]
+
 requires-python = ">=3.11"
+license = { file = "LICENSE" }
+
+[project.urls]
+Homepage = "https://github.com/gindvd/CTkTrimSlider/"
+
+classifiers = [
+  "Framework :: CustomTKinter",
+  "framework :: TKinter",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",    
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: MIT License"
+]
 
 dependencies = [
   "customtkinter==5.2.2",

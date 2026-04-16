@@ -2,7 +2,7 @@
 Custom Draw Engine
 Custom draw engine to draw trim slider components on a canvas
 Author: David Gingerich
-Version 0.1.1
+Version 1.0.2
 """
 
 import tkinter
