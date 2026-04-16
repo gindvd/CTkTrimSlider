@@ -116,4 +116,4 @@ root.mainloop()
    Get any attribute value.
    
 ### More Details
-For a more extensive example using this widget and its full capabilities, please visit [GUI_Video_Compressor/video_trimmer_widget](https://github.com/gindvd/GUI_Video_Compressor/blob/main/src/components/video_trimmer.py)
+For a more extensive example using this widget and its full capabilities, please visit [video_trimmer_widget](https://github.com/gindvd/GUI_Video_Compressor/blob/main/src/components/video_trimmer.py)
