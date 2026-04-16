@@ -15,7 +15,6 @@ requires-python = ">=3.11"
 license = { file = "LICENSE" }
 
 classifiers = [
-  "framework :: Tkinter",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",    
   "Operating System :: OS Independent",
