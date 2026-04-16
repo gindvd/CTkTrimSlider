@@ -14,12 +14,8 @@ authors = [
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 
-[project.urls]
-Homepage = "https://github.com/gindvd/CTkTrimSlider/"
-
 classifiers = [
-  "Framework :: CustomTKinter",
-  "framework :: TKinter",
+  "framework :: Tkinter",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",    
   "Operating System :: OS Independent",
@@ -31,6 +27,9 @@ dependencies = [
   "darkdetect==0.8.0",
   "packaging==26.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gindvd/CTkTrimSlider/"
 
 [project.optional-dependencies]
 dev = [
