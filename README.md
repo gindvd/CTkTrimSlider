@@ -97,7 +97,7 @@ root.mainloop()
 
     All attributes can be configured and updated.
     ```python
-     range_slider.configure(fg_color=..., progress_color=..., button_color=..., ...)
+       trim_slider.configure(fg_color=..., progress_color=..., button_color=..., ...)
     ```
 - **.set(attribute_name, input_value,)**
 
