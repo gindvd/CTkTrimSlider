@@ -1,7 +1,7 @@
 # CTkTrimSlider
 **A video trim slider widget made for [customtkinter](https://github.com/TomSchimansky/CustomTkinter)**
 
-
+<img width="672" height="223" alt="CTkTrimSlider_example_screenshot_1" src="https://github.com/user-attachments/assets/d5fe7e0b-74a3-4240-8985-cd04820e4064" />
 
 ## Installation
 Download the [source code](https://github.com/gindvd/CTkTrimSlider/archive/refs/heads/main.zip), paste the `CTkTrimSlider` folder in the directory where your program is present.
