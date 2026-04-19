@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "CTkTrimSlider"
-version = "1.0.4"
+version = "1.0.5"
 description = "A video trim slider widget for customtkinter"
 readme = "README.md"
 authors = [
@@ -35,7 +35,6 @@ dev = [
 ]
 
 [tool.mypy]
-mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 strict = false
 
 [tool.setuptools.package-data]
