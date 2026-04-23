@@ -1,779 +1,237 @@
 """
-CTkTrimSlider
-Video trim slider for custom tkinter
+Custom Draw Engine
+Custom draw engine to draw trim slider components on a canvas
 Author: David Gingerich
-Version 1.1.6
+Version 1.0.7
 """
 
 import tkinter
-import sys
-from collections.abc import Callable
-from typing import Any
 
-from customtkinter.windows.widgets.theme import ThemeManager
+from customtkinter.windows.widgets.core_rendering import DrawEngine
 from customtkinter.windows.widgets.core_rendering import CTkCanvas
-from customtkinter.windows.widgets.core_widget_classes import CTkBaseClass
 
-from CTkTrimSlider.ctk_trimslider import CustomDrawEngine
-
-class CTkTrimSlider(CTkBaseClass):
+class CustomDrawEngine(DrawEngine):
+  """
+  Custom Draw Engine to draw slider with 2 outer trim slider buttons,
+  and an center seek button
   
-  """ 
-  The trim slider is a custom slider with two outer buttons for changing 
-  the start and end times of a video, and a center button that will both 
-  move as the video is playing, or be manually moved to seek a specific time stamp.
-  
-  Visual Representation of the trim slider:
+   Visual Representation of the trim slider:
   
   -----|=====•=====|----
-  
-  """   
+  """
 
-  def __init__(self,
-               master: object,
-               width: int | None = None,
-               height: int | None = None,
-               corner_radius: int | None = None,
-               border_width: int | None = None,
-               
-               outer_button_length: int | None = None,
-               outer_button_corner_radius: int | None = None,
-               center_button_corner_radius: int | None = None,
-               
-               bg_color: str | tuple[str] = "transparent",
-               fg_color: str | tuple[str] | None = None,
-               border_color: str | tuple[str] = "transparent",
-               progress_color: str | tuple[str] | None = None,
-               button_color: str | tuple[str] | None = None,
-               button_hover_color: str | tuple[str] | None = None,
-               
-               from_: int = 0,
-               to: int = 1,
-               number_of_steps: int = 1000,
-               state: str = "normal",
-               hover: bool = True,
-               orientation: str = "horizontal",
-               
-               left_button_command: Callable[[float], None] | None = None,
-               right_button_command: Callable[[float], None] | None = None,
-               center_button_command: Callable[[float], None] | None = None,
-               
-               left_button_var: tkinter.Variable | None = None,
-               right_button_var: tkinter.Variable | None = None,
-               center_button_var: tkinter.Variable | None = None,
-               
-               button_blocking: bool = False,
-               **kwargs) -> None:
-  
-     # set default dimensions according to orientation
-    if width is None:
-      if orientation.lower() == "vertical":
-        width = 24
-      else:
-        width = 500
+  def __init__(self, canvas: CTkCanvas) -> None:
+    super().__init__(canvas)
 
-    if height is None:
-      if orientation.lower() == "vertical":
-        height = 500
-      else:
-        height = 24
+  # function to start drawing slider bar and 3 buttons onto a canvas widget
+  def draw_rounded_slider_with_border_and_3_buttons(self,
+                                                    width: int | float,
+                                                    height: int | float,
+                                                    corner_radius: int | float,
+                                                    border_width: int | float,
+
+                                                    outer_button_length: int | float,
+                                                    outer_button_corner_radius: int | float,
+                                                    
+                                                    center_button_corner_radius: int | float,
+
+                                                    lbutton_value: int | float,
+                                                    rbutton_value: int | float,
+                                                    cbutton_value: int | float,
+                                                    
+                                                    orientation: str) -> bool:
     
-    if outer_button_length is None:
-      self._outer_button_length: int = 12
+    # restrict corner_radius if it's too larger
+    if border_width > width / 2 or border_width > height / 2:  
+      border_width = min(width / 2, height / 2)
+    
+    if corner_radius > width / 2 or corner_radius > height / 2:
+      corner_radius = min(width / 2, height / 2)
+
+    corner_radius = round(corner_radius)
+    border_width = round(border_width)
+    
+    # restrict outer_button_corner_radius if too large or too small
+    outer_button_length = round(outer_button_length)
+    center_button_corner_radius = round(center_button_corner_radius /  2.5)
+
+    # scale outer_button_length and center_button_corner_radius proportionally to the cross-axis
+    # so buttons resize correctly when the widget is stretched by layout managers
+    if orientation == "w":
+      cross_axis = height
     else:
-      self._outer_button_length = outer_button_length
-    
-    super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
-
-    # color
-    self._border_color: str = self._check_color_type(border_color, transparency=True)
-    self._fg_color: str = ThemeManager.theme["CTkSlider"]["fg_color"] if fg_color is None else self._check_color_type(fg_color)
-    self._progress_color: str = ThemeManager.theme["CTkSlider"]["progress_color"] if progress_color is None else self._check_color_type(progress_color, transparency=True)
-    
-    self._button_color: str = ThemeManager.theme["CTkSlider"]["button_color"] if button_color is None else self._check_color_type(button_color)
-    self._button_hover_color: str = ThemeManager.theme["CTkSlider"]["button_hover_color"] if button_hover_color is None else self._check_color_type(button_hover_color)
-
-    # shape
-    self._corner_radius: int | float = ThemeManager.theme["CTkSlider"]["corner_radius"] if corner_radius is None else corner_radius
-    self._border_width: int | float = ThemeManager.theme["CTkSlider"]["border_width"] if border_width is None else border_width
-    
-    # corner radius
-    # fix to use these small values if None due to ThemeManager using erxtremely large values in the JSON which caused rendering issues
-    self._center_button_corner_radius: int | float = 8 if center_button_corner_radius is None else center_button_corner_radius
-    self._outer_button_corner_radius: int | float = 6 if outer_button_corner_radius is None else outer_button_corner_radius
-    
-    if from_ >= to:
-      raise ValueError("from_ value cannot be greater than or equal to to value!")
-    
-    # input and output values
-    self._from_:int = from_
-    self._to: int = to
-
-    # values under 1 causes button values to be neegative which leads to draw errors
-    # also doesn't make sense to have 1 step
-    if number_of_steps <= 1:
-      raise ValueError("number_of_steps must be any value above 1")
-    
-    self._number_of_steps: int  = number_of_steps
-    self._step_size: float = (self._to - self._from_) / self._number_of_steps
-    
-    # output values
-    self._left_output_value: int| float = from_
-    self._right_output_value: int | float = to
-    self._center_output_value: float = from_ + (to - from_) / 2
-    
-    # states 
-    self._state: str = state
-    self._hover: bool = hover
-    self._hover_state: bool = False
-    self._orientation: str = orientation.lower()
-    
-    # set initial left, right, and center button values, must be between 0 and 1
-    self._lbutton_value: float = 0
-    self._rbutton_value: float = 1
-    self._cbutton_value: float = 0.5
-    
-    # commands fro each button
-    self._left_button_command: Callable[[float], None] | None = left_button_command
-    self._right_button_command: Callable[[float], None] | None = right_button_command
-    self._center_button_command: Callable[[float], None] | None = center_button_command
-    
-    # initialize tkinter variables
-    self._left_button_var: tkinter.Variable | None = left_button_var
-    self._right_button_var: tkinter.Variable | None = right_button_var
-    self._center_button_var: tkinter.Variable | None = center_button_var
-
-    self._variable_callback_blocked: bool = False
-    self._variable_callback_name: list[str | None] = [None, None, None]
-    
-    # when button blocking is true, right and left buttons cannot move past the center buttons position
-    # when false, moving left and right button can chenge the position and values of the center button
-    self._button_blocking: bool = button_blocking 
-    
-    self.grid_rowconfigure(0, weight=1)
-    self.grid_columnconfigure(0, weight=1)
-
-    self._canvas = CTkCanvas(master=self,
-                             highlightthickness=0,
-                             width=self._apply_widget_scaling(self._current_width),
-                             height=self._apply_widget_scaling(self._current_height))
-    
-    self._canvas.grid(column=0, row=0, rowspan=1, columnspan=1, sticky="nswe")
-
-    self._draw_engine = CustomDrawEngine(self._canvas)
-    
-    # change variable individually
-    if self._left_button_var is not None:
-      self._variable_callback_name[0] = self._left_button_var.trace_add("write", lambda *args: self._on_left_button_var_change())
-      self.set("left_value", self._left_button_var.get(), from_variable_callback=True)
-
-    if self._right_button_var is not None:
-      self._variable_callback_name[1] = self._right_button_var.trace_add("write", lambda *args: self._on_right_button_var_change())
-      self.set("right_value", self._right_button_var.get(), from_variable_callback=True)
-    
-    if self._center_button_var is not None:
-      self._variable_callback_name[2] = self._center_button_var.trace_add("write", lambda *args: self._on_center_button_var_change())
-      self.set("center_value", self._center_button_var.get(), from_variable_callback=True)
-    
-    self._draw()
-    
-    self._set_cursor()
-    self._create_bindings()
-
-  def _set_scaling(self, *args, **kwargs) -> None:
-    super()._set_scaling(*args, **kwargs)
-
-    self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
-                            height=self._apply_widget_scaling(self._desired_height))
-    self._draw(no_color_updates=True)
-
-  def _set_dimensions(self, width=None, height=None) -> None:
-    super()._set_dimensions(width, height)
-
-    self._canvas.configure(width=self._apply_widget_scaling(self._desired_width),
-                          height=self._apply_widget_scaling(self._desired_height))
-    self._draw()
-  
-  def _set_cursor(self):
-    if self._state == "normal" and self._cursor_manipulation_enabled:
-      if sys.platform == "darwin":
-        self.configure(cursor="pointinghand")
-      elif sys.platform.startswith("win"):
-        self.configure(cursor="hand2")
-      elif sys.platform == "linux":
-        self.configure(cursor="hand2")
-
-    elif self._state == "disabled" and self._cursor_manipulation_enabled:
-      if sys.platform == "darwin":
-        self.configure(cursor="arrow")
-      elif sys.platform.startswith("win"):
-        self.configure(cursor="arrow")
-      elif sys.platform == "linux":
-        self.configure(cursor="arrow")
-  
-  def _draw(self, no_color_updates: bool=False) -> None:
-    super()._draw(no_color_updates)
-    
-    if self._orientation == "horizontal":
-      orientation = "w"
-    elif self._orientation == "vertical":
-      orientation = "s"
-    else:
-      orientation = "w"
-
-    requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(
-                                                          width = self._apply_widget_scaling(self._current_width), 
-                                                          height = self._apply_widget_scaling(self._current_height),
-                                                          corner_radius = self._apply_widget_scaling(self._corner_radius),
-                                                          border_width = self._apply_widget_scaling(self._border_width),
-                                                          
-                                                          outer_button_length = self._apply_widget_scaling(self._outer_button_length),
-                                                          outer_button_corner_radius = self._apply_widget_scaling(self._outer_button_corner_radius),
-                                                          center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
-
-                                                          lbutton_value = self._lbutton_value,
-                                                          rbutton_value = self._rbutton_value,
-                                                          cbutton_value = self._cbutton_value,
-                                                          orientation = orientation
-                                                      )
-    
-    if no_color_updates or requires_recoloring is False:
-      return
-    
-    self._canvas.configure(bg=self._apply_appearance_mode(self._bg_color))
-
-    if self._border_color == "transparent":
-      self._canvas.itemconfig("border_parts", fill=self._apply_appearance_mode(self._bg_color),
-                              outline=self._apply_appearance_mode(self._bg_color))
-    else:
-      self._canvas.itemconfig("border_parts", fill=self._apply_appearance_mode(self._border_color),
-                              outline=self._apply_appearance_mode(self._border_color))
-
-    self._canvas.itemconfig("inner_parts", fill=self._apply_appearance_mode(self._fg_color),
-                            outline=self._apply_appearance_mode(self._fg_color))
-
-    if self._progress_color == "transparent":
-      self._canvas.itemconfig("progress_parts", fill=self._apply_appearance_mode(self._fg_color),
-                               outline=self._apply_appearance_mode(self._fg_color))
-    else:
-      self._canvas.itemconfig("progress_parts", fill=self._apply_appearance_mode(self._progress_color),
-                               outline=self._apply_appearance_mode(self._progress_color))
-      
-    if (self._hover_state and self._hover) is True:
-      self._canvas.itemconfig("left_button_parts",
-                              fill=self._apply_appearance_mode(self._button_hover_color),
-                              outline=self._apply_appearance_mode(self._button_hover_color))
-    else:
-      self._canvas.itemconfig("left_button_parts",
-                              fill=self._apply_appearance_mode(self._button_color),
-                              outline=self._apply_appearance_mode(self._button_color))
-
-    if (self._hover_state and self._hover) is True:
-      self._canvas.itemconfig("right_button_parts",
-                              fill=self._apply_appearance_mode(self._button_hover_color),
-                              outline=self._apply_appearance_mode(self._button_hover_color))
-    else:
-      self._canvas.itemconfig("right_button_parts",
-                              fill=self._apply_appearance_mode(self._button_color),
-                              outline=self._apply_appearance_mode(self._button_color))
-      
-    if (self._hover_state and self._hover) is True:
-      self._canvas.itemconfig("center_button_parts",
-                              fill=self._apply_appearance_mode(self._button_hover_color),
-                              outline=self._apply_appearance_mode(self._button_hover_color))
-    else:
-      self._canvas.itemconfig("center_button_parts",
-                              fill=self._apply_appearance_mode(self._button_color),
-                              outline=self._apply_appearance_mode(self._button_color))
-  
-  def _create_bindings(self, sequence: str | None = None) -> None:
-    if sequence is None or sequence == "<Enter>":
-      self._canvas.tag_bind("left_button_parts", "<Enter>", self._lbutton_on_enter)
-      self._canvas.tag_bind("right_button_parts", "<Enter>", self._rbutton_on_enter)
-      self._canvas.tag_bind("center_button_parts", "<Enter>", self._cbutton_on_enter)
-    if sequence is None or sequence == "<Leave>":
-      self._canvas.tag_bind("left_button_parts", "<Leave>", self._lbutton_on_leave)
-      self._canvas.tag_bind("right_button_parts", "<Leave>", self._rbutton_on_leave)
-      self._canvas.tag_bind("center_button_parts", "<Leave>", self._cbutton_on_leave)
-    if sequence is None or sequence == "<Button-1>":
-      self._canvas.bind("<Button-1>", self._clicked)
-    if sequence is None or sequence == "<B1-Motion>":
-      self._canvas.bind("<B1-Motion>", self._clicked)
-
-  def _lbutton_on_enter(self, event=0) -> None:
-    if self._state != "normal":
-      return
-    
-    if self._hover is False:
-      return
-    
-    self._hover_state = True
-    self._canvas.itemconfig("left_button_parts",
-                            fill=self._apply_appearance_mode(self._button_hover_color),
-                            outline=self._apply_appearance_mode(self._button_hover_color))
-  
-  def _rbutton_on_enter(self, event=0) -> None:
-    if self._state != "normal":
-      return
-    
-    if self._hover is False:
-      return
-    
-    self._hover_state = True
-    self._canvas.itemconfig("right_button_parts",
-                            fill=self._apply_appearance_mode(self._button_hover_color),
-                            outline=self._apply_appearance_mode(self._button_hover_color))
-  
-  def _cbutton_on_enter(self, event=0) -> None:
-    if self._state != "normal":
-      return
-    
-    if self._hover is False:
-      return
-    
-    self._hover_state = True
-    self._canvas.itemconfig("center_button_parts",
-                            fill=self._apply_appearance_mode(self._button_hover_color),
-                            outline=self._apply_appearance_mode(self._button_hover_color))
-  
-  def _lbutton_on_leave(self, event=0) -> None:
-    self._hover_state = False
-    self._canvas.itemconfig("left_button_parts",
-                            fill=self._apply_appearance_mode(self._button_color),
-                            outline=self._apply_appearance_mode(self._button_color))
-  
-  def _rbutton_on_leave(self, event=0) -> None:
-    self._hover_state = False
-    self._canvas.itemconfig("right_button_parts",
-                            fill=self._apply_appearance_mode(self._button_color),
-                            outline=self._apply_appearance_mode(self._button_color))
-  
-  def _cbutton_on_leave(self, event=0) -> None:
-    self._hover_state = False
-    self._canvas.itemconfig("center_button_parts",
-                            fill=self._apply_appearance_mode(self._button_color),
-                            outline=self._apply_appearance_mode(self._button_color))
-
-  def _get_button_offset_and_range(self):
-    # aligns mouse position with 3 buttons due to their new formulas
-    # buttons don't travel the full width of the widget to keep the buttons from overlapping
-    # need to calculate the new range, and offsets to get acurate mouse position and values
-    outer_button_length = round(self._apply_widget_scaling(self._outer_button_length))
-    center_button_corner_radius = round(self._apply_widget_scaling(self._center_button_corner_radius) / 2.5)
-
-    # scale proportionally to cross-axis, matching the draw engine
-    if self._orientation == "horizontal":
-      cross_axis = self._apply_widget_scaling(self._current_height)
-      total = self._apply_widget_scaling(self._current_width)
-    else:
-      cross_axis = self._apply_widget_scaling(self._current_width)
-      total = self._apply_widget_scaling(self._current_height)
-    
+      cross_axis = width
     outer_button_length = round(max(outer_button_length, cross_axis * 0.5))
     center_button_corner_radius = round(max(center_button_corner_radius, cross_axis * 0.35))
 
-    offset = outer_button_length + center_button_corner_radius
-    max_range = total - (offset * 2)
-    return offset, max_range
+    # compute corner radius after scaling so it matches the final button length
+    outer_button_corner_radius = round(outer_button_length / 2)
 
-  def _clicked(self, event=0) -> None:
-    if self._state != "normal":
-      return
+    border_width = round(border_width + min(width / border_width, height / border_width))
 
-    tags = self._canvas.gettags("current")
-    
-    if "left_button_parts" in tags:
-      self._left_button_move_handler(event)
-    elif "center_button_parts" in tags:
-      self._center_button_move_handler(event)
-    elif "right_button_parts" in tags:
-      self._right_button_move_handler(event)
-  
-  def _left_button_move_handler(self, event=0) -> None:
-    # handles the calculations to move the left button
-    move_cbutton = False
-    offset, max_range = self._get_button_offset_and_range()
-
-    if self._orientation == "horizontal":
-      self._lbutton_value = event.x / max_range
+    if corner_radius >= border_width:
+      inner_corner_radius = round(corner_radius - border_width)
     else:
-      self._lbutton_value = 1 - event.y / max_range
-    
-    if self._lbutton_value < 0:
-      self._lbutton_value = 0
-
-    if not self._button_blocking:
-      if self._lbutton_value > self._rbutton_value:
-        self._lbutton_value = self._rbutton_value
-      
-      if self._lbutton_value > self._cbutton_value:
-        move_cbutton = True
-      
-    # left button cannot move center button if button blocking true
-    else:
-      if self._lbutton_value > self._cbutton_value:
-        self._lbutton_value = self._cbutton_value
-      
-    self._left_output_value = self._round_to_step_size(self._from_ + (self._lbutton_value * (self._to - self._from_)))
-    self._lbutton_value = (self._left_output_value - self._from_) / (self._to - self._from_)
-    
-    if move_cbutton:
-      self._center_output_value = self._left_output_value
-      self._cbutton_value = self._lbutton_value
-
-    # run command associated with left button
-    if self._left_button_command is not None:
-      self._left_button_command(self._left_output_value)
-    
-    # set left varaibles
-    if self._left_button_var is not None:
-      self._variable_callback_blocked = True
-      self._left_button_var.set(self._left_output_value)
-      self._variable_callback_blocked = False
-    
-    if self._center_button_var is not None and move_cbutton:
-      self._variable_callback_blocked = True
-      self._center_button_var.set(self._center_output_value)
-      self._variable_callback_blocked = False
+      inner_corner_radius = 0
 
     
-    self._draw(no_color_updates=False)
-
-  def _right_button_move_handler(self, event=0) -> None:
-    # handles the calculations to move the right button
-    move_cbutton = False
-    offset, max_range = self._get_button_offset_and_range()
-
-    if self._orientation == "horizontal":
-        self._rbutton_value = (event.x - 2 * offset) / max_range
-    else:
-      self._rbutton_value = 1 - (event.y - 2 * offset) / max_range
-
-    if self._rbutton_value >= 1:
-        self._rbutton_value = 1
-
-    if not self._button_blocking:
-      if self._rbutton_value < self._lbutton_value:
-        self._rbutton_value = self._lbutton_value
-
-      if self._rbutton_value < self._cbutton_value:
-        move_cbutton = True  
-
-    # right button cannot move center button if button blocking true
-    else:    
-      if self._rbutton_value < self._cbutton_value:
-        self._rbutton_value = self._cbutton_value 
-        
-    self._right_output_value = self._round_to_step_size(self._from_ + (self._rbutton_value * (self._to - self._from_)))
-    self._rbutton_value = (self._right_output_value - self._from_) / (self._to - self._from_)
-      
-    # run command associated with rightr button
-    if self._right_button_command is not None:
-      self._right_button_command(self._right_output_value)
-
-    if move_cbutton:
-      self._center_output_value = self._right_output_value
-      self._cbutton_value = self._rbutton_value
-        
-    # set right varaibles
-    if self._right_button_var is not None:
-      self._variable_callback_blocked = True
-      self._right_button_var.set(self._right_output_value)
-      self._variable_callback_blocked = False
+    return self.__draw_rounded_slider_with_border_and_3_buttons_font_shapes(width=width, height=height, border_width=border_width, corner_radius=corner_radius,  
+                                                                            inner_corner_radius=inner_corner_radius, outer_button_length=outer_button_length, 
+                                                                            outer_button_corner_radius=outer_button_corner_radius, center_button_corner_radius=center_button_corner_radius,  
+                                                                            lbutton_value=lbutton_value, rbutton_value=rbutton_value, cbutton_value=cbutton_value, orientation=orientation)
     
-    if self._center_button_var is not None and move_cbutton:
-      self._variable_callback_blocked = True
-      self._center_button_var.set(self._center_output_value)
-      self._variable_callback_blocked = False
+  def __draw_rounded_slider_with_border_and_3_buttons_font_shapes(self,
+                                                    width: int | float,
+                                                    height: int | float,
+
+                                                    border_width: int | float,
+                                                    corner_radius: int | float,
+                                                    inner_corner_radius: int | float,
+
+                                                    outer_button_length: int | float,
+                                                    outer_button_corner_radius: int | float,
+
+                                                    center_button_corner_radius: int | float,
+
+                                                    lbutton_value: int | float,
+                                                    rbutton_value: int | float,
+                                                    cbutton_value: int | float,
+                                                    
+                                                    orientation: str) -> bool:
+   
+    # draw normal progressbar
+    requires_recoloring: bool = self._DrawEngine__draw_rounded_progress_bar_with_border_font_shapes(width=width, height=height, border_width=border_width, corner_radius=corner_radius, 
+                                                                                                    inner_corner_radius=inner_corner_radius,  progress_value_1=lbutton_value, 
+                                                                                                    progress_value_2=rbutton_value, orientation=orientation)
+
+    # New calculations to keep the buttons from occupying the same space when there values are the same
+    # does so by changing the distance they can travel and then moving each otf the buttons to the right slightly
+    if orientation == "w":
+      offset = outer_button_length + center_button_corner_radius
+      max_button_range = width - (offset * 2)
+
+      lbutton_x_pos = max_button_range * lbutton_value
+      cbutton_x_pos = (max_button_range * cbutton_value) + offset
+      rbutton_x_pos = (max_button_range * rbutton_value) + (offset * 2)
+
+    elif orientation == "s":
+      offset = outer_button_length + center_button_corner_radius
+      max_button_range = height - (offset * 2)
+
+      rbutton_y_pos = max_button_range * (1 - rbutton_value)
+      cbutton_y_pos = (max_button_range * (1 - cbutton_value)) + offset
+      lbutton_y_pos = (max_button_range * (1 - lbutton_value)) + (offset * 2)
     
-    self._draw(no_color_updates=False)
-  
-  def _center_button_move_handler(self, event=0) -> None:
-    # change the center buttons location on the bar and set output values
-    offset, max_range = self._get_button_offset_and_range()
-
-    if self._orientation == "horizontal":
-      self._cbutton_value = (event.x - offset) / max_range
-    else:
-      self._cbutton_value = 1 - (event.y - offset) / max_range
+    # create the left slider button as a rectangle with round corners  
+    if not self._canvas.find_withtag("lbutton_oval_1_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("lbutton_oval_1_a", "button_corner_part", "button_parts", "left_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("lbutton_oval_1_b", "button_corner_part", "button_parts", "left_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
     
-    if self._cbutton_value < self._lbutton_value:
-      self._cbutton_value = self._lbutton_value 
-    elif self._cbutton_value > self._rbutton_value:
-      self._cbutton_value = self._rbutton_value 
-      
-    self._center_output_value = self._round_to_step_size(self._from_ + (self._cbutton_value * (self._to - self._from_)))
-    self._cbutton_value = (self._center_output_value - self._from_) / (self._to - self._from_)
+    if not self._canvas.find_withtag("lbutton_oval_2_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("lbutton_oval_2_a", "button_corner_part", "button_parts", "left_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("lbutton_oval_2_b", "button_corner_part", "button_parts", "left_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
+
+    # create the 2 rectangles (if needed)
+    if not self._canvas.find_withtag("lbutton_rectangle_1") and outer_button_length > 0:
+      self._canvas.create_rectangle(0, 0, 0, 0, tags=("lbutton_rectangle_1", "button_rectangle_part", "button_parts", "left_button_parts"), width=0)
+      requires_recoloring = True
+
+    elif self._canvas.find_withtag("lbutton_rectangle_1") and not outer_button_length > 0:
+      self._canvas.delete("lbutton_rectangle_1")
+
+    # set positions of circles and rectangles
+    # draws button on horizontal progress bar
+    if orientation == "w":
+      self._canvas.coords("lbutton_oval_1_a", lbutton_x_pos + outer_button_corner_radius, outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("lbutton_oval_1_b", lbutton_x_pos + outer_button_corner_radius, outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("lbutton_oval_2_a", lbutton_x_pos + outer_button_corner_radius, height - outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("lbutton_oval_2_b", lbutton_x_pos + outer_button_corner_radius, height - outer_button_corner_radius, outer_button_corner_radius)
+
+      self._canvas.coords("lbutton_rectangle_1",
+                          lbutton_x_pos,
+                          outer_button_corner_radius,
+                          lbutton_x_pos + outer_button_length,
+                          height - outer_button_corner_radius)
+
+    # draws button on vertical progress bar
+    elif orientation == "s":
+      self._canvas.coords("lbutton_oval_1_a", outer_button_corner_radius, lbutton_y_pos - outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("lbutton_oval_1_b", outer_button_corner_radius, lbutton_y_pos - outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("lbutton_oval_2_a", width - outer_button_corner_radius, lbutton_y_pos - outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("lbutton_oval_2_b", width - outer_button_corner_radius, lbutton_y_pos - outer_button_corner_radius, outer_button_corner_radius)
+
+      self._canvas.coords("lbutton_rectangle_1",
+                          outer_button_corner_radius,
+                          lbutton_y_pos - outer_button_length,
+                          width - outer_button_corner_radius,
+                          lbutton_y_pos)
+   
+   # create the right slider button as a rectangle with round corners  
+    if not self._canvas.find_withtag("rbutton_oval_1_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_1_a", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_1_b", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
     
-    # run command associated with center button
-    if self._center_button_command is not None:
-      self._center_button_command(self._center_output_value)
+    if not self._canvas.find_withtag("rbutton_oval_2_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_2_a", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("rbutton_oval_2_b", "button_corner_part", "button_parts", "right_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
+
+    # create the 2 rectangles (if needed)
+    if not self._canvas.find_withtag("rbutton_rectangle_1") and outer_button_length > 0:
+      self._canvas.create_rectangle(0, 0, 0, 0, tags=("rbutton_rectangle_1", "button_rectangle_part", "button_parts", "right_button_parts"), width=0)
+      requires_recoloring = True
+
+    elif self._canvas.find_withtag("rbutton_rectangle_1") and not outer_button_length > 0:
+      self._canvas.delete("rbutton_rectangle_1")
+
+    # set positions of circles and rectangles
+    # draws button on horizontal progress bar
+    if orientation == "w":
+      self._canvas.coords("rbutton_oval_1_a", rbutton_x_pos - outer_button_corner_radius, outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_1_b", rbutton_x_pos - outer_button_corner_radius, outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_a", rbutton_x_pos - outer_button_corner_radius, height - outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_b", rbutton_x_pos - outer_button_corner_radius, height - outer_button_corner_radius, outer_button_corner_radius)
+
+      self._canvas.coords("rbutton_rectangle_1",
+                          rbutton_x_pos - outer_button_length,
+                          outer_button_corner_radius,
+                          rbutton_x_pos,
+                          height - outer_button_corner_radius)
+
+    # draws button on vertical progress bar
+    elif orientation == "s":      
+      self._canvas.coords("rbutton_oval_1_a", outer_button_corner_radius, rbutton_y_pos + outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_1_b", outer_button_corner_radius, rbutton_y_pos + outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_a", width - outer_button_corner_radius, rbutton_y_pos + outer_button_corner_radius, outer_button_corner_radius)
+      self._canvas.coords("rbutton_oval_2_b", width - outer_button_corner_radius, rbutton_y_pos + outer_button_corner_radius, outer_button_corner_radius)
+
+      self._canvas.coords("rbutton_rectangle_1",
+                          outer_button_corner_radius,
+                          rbutton_y_pos,
+                          width - outer_button_corner_radius,
+                          rbutton_y_pos + outer_button_length)
     
-    # set center varaibles
-    if self._center_button_var is not None:
-      self._variable_callback_blocked = True
-      self._center_button_var.set(self._center_output_value)
-      self._variable_callback_blocked = False
+    # create the center slider button as a rectangle with round corners  
+    if not self._canvas.find_withtag("cbutton_oval_1_a"):
+      self._canvas.create_aa_circle(0, 0, 0, tags=("cbutton_oval_1_a", "button_corner_part", "button_parts", "center_button_parts"), anchor=tkinter.CENTER)
+      self._canvas.create_aa_circle(0, 0, 0, tags=("cbutton_oval_1_b", "button_corner_part", "button_parts", "center_button_parts"), anchor=tkinter.CENTER, angle=180)
+      requires_recoloring = True
+
+    # set positions of circles and rectangles
+    # draws button on horizontal progress bar
+    if orientation == "w":
+      self._canvas.coords("cbutton_oval_1_a", cbutton_x_pos, height / 2, center_button_corner_radius)
+      self._canvas.coords("cbutton_oval_1_b", cbutton_x_pos, height / 2, center_button_corner_radius)
+
+    # draws button on vertical progress bar
+    elif orientation == "s":      
+      self._canvas.coords("cbutton_oval_1_a", width / 2, cbutton_y_pos, center_button_corner_radius)
+      self._canvas.coords("cbutton_oval_1_b", width / 2, cbutton_y_pos, center_button_corner_radius)
     
-    self._draw(no_color_updates=False)
-  
-  def _round_to_step_size(self, value) -> float:
-    step_index = round((value - self._from_) / self._step_size)
-    value = self._from_ + step_index * self._step_size
-    return value
-
-  def _destroy(self) -> None:
-    # remove variable_callback from variable callbacks if variable exists
-    if self._left_button_var is not None and self._variable_callback_name[0] is not None:
-      self._left_button_var.trace_remove("write", self._variable_callback_name[0])
+    if requires_recoloring:  # new parts were added -> manage z-order
+      self._canvas.tag_raise("button_parts")
     
-    if self._right_button_var is not None and self._variable_callback_name[1] is not None:
-      self._right_button_var.trace_remove("write", self._variable_callback_name[1])
-    
-    if self._center_button_var is not None and self._variable_callback_name[2] is not None:
-      self._center_button_var.trace_remove("write", self._variable_callback_name[2])
-
-    super().destroy()
-
-  def bind(self, sequence: str | None= None, command: Callable[[Any], int | float] | None = None, add: str | bool = True) -> None:
-    """ called on the tkinter.Canvas """
-    if not (add == "+" or add is True):
-      add = "+"
-    self._canvas.bind(sequence, command, add=add)
-
-  def unbind(self, sequence: str | None = None, funcid: str | None = None) -> None:
-    """ called on the tkinter.Label and tkinter.Canvas """
-    if funcid is not None:
-      raise ValueError("'funcid' argument can only be None, because there is a bug in" +
-                       " tkinter and its not clear whether the internal callbacks will be unbinded or not")
-
-    self._canvas.unbind(sequence, None)
-    self._create_bindings(sequence=sequence)  # restore internal callbacks for sequence
-  
-  def configure(self, require_redraw=False, **kwargs) -> None:
-    if "corner_radius" in kwargs:
-      self._corner_radius = kwargs.pop("corner_radius")
-      require_redraw = True
-
-    if "outer_button_corner_radius" in kwargs:
-      self._outer_button_corner_radius = kwargs.pop("outer_button_corner_radius")
-      require_redraw = True
-  
-    if "center_button_corner_radius" in kwargs:
-      self._center_button_corner_radius = kwargs.pop("center_button_corner_radius")
-      require_redraw = True
-
-    if "border_width" in kwargs:
-      self._border_width = kwargs.pop("border_width")
-      require_redraw = True
-
-    if "outer_button_length" in kwargs:
-      self._outer_button_length = kwargs.pop("outer_button_length")
-      require_redraw = True
-
-    if "fg_color" in kwargs:
-      self._fg_color = self._check_color_type(kwargs.pop("fg_color"))
-      require_redraw = True
-
-    if "border_color" in kwargs:
-      self._border_color = self._check_color_type(kwargs.pop("border_color"), transparency=True)
-      require_redraw = True
-
-    if "progress_color" in kwargs:
-      self._progress_color = self._check_color_type(kwargs.pop("progress_color"), transparency=True)
-      require_redraw = True
-
-    if "button_color" in kwargs:
-      self._button_color = self._check_color_type(kwargs.pop("button_color"))
-      require_redraw = True
-
-    if "button_hover_color" in kwargs:
-      self._button_hover_color = self._check_color_type(kwargs.pop("button_hover_color"))
-      require_redraw = True
-
-    if "from_" in kwargs:
-      new_from = kwargs.pop("from_")
-      if new_from >= self._to:
-        raise ValueError("from_ value cannot be greater thet to value")
-      
-      self._from_ = new_from
-
-    if "to" in kwargs:
-      new_to = kwargs.pop("to")
-      if new_to <= self._from_:
-        raise ValueError("to value cannot be less than current from_ value")
-      
-      self._to = new_to
-
-    if "state" in kwargs:
-      self._state = kwargs.pop("state")
-      self._set_cursor()
-      require_redraw = True
-
-    if "number_of_steps" in kwargs:
-      new_steps = kwargs.pop("number_of_steps")
-      if new_steps <= 1:
-        raise ValueError("number_of_steps must be any value above 1")
-      
-      self._number_of_steps = new_steps
-      self._step_size = (self._to - self._from_) / self._number_of_steps
-      
-    if "hover" in kwargs:
-      self._hover = kwargs.pop("hover")
-    
-    if "left_button_command" in kwargs:
-      self._left_button_command = kwargs.pop("left_button_command")
-    
-    if "right_button_command" in kwargs:
-      self._right_button_command = kwargs.pop("right_button_command")
-    
-    if "center_button_command" in kwargs:
-      self._center_button_command = kwargs.pop("center_button_command")
-
-    if "orientation" in kwargs:
-      self._orientation = kwargs.pop("orientation").lower()
-      require_redraw = True
-
-    super().configure(require_redraw=require_redraw, **kwargs)
-  
-  def cget(self, attribute_name: str) -> Any:
-    if attribute_name == "corner_radius":
-      return self._corner_radius
-    elif attribute_name == "outer_button_corner_radius":
-      return self._outer_button_corner_radius
-    elif attribute_name == "center_button_corner_radius":
-      return self._center_button_corner_radius
-    elif attribute_name == "border_width":
-      return self._border_width
-    elif attribute_name == "outer_button_length":
-      return self._outer_button_length
-
-    elif attribute_name == "fg_color":
-      return self._fg_color
-    elif attribute_name == "border_color":
-      return self._border_color
-    elif attribute_name == "progress_color":
-      return self._progress_color
-    elif attribute_name == "button_color":
-      return self._button_color
-    elif attribute_name == "button_hover_color":
-      return self._button_hover_color
-
-    elif attribute_name == "from_":
-      return self._from_
-    elif attribute_name == "to":
-      return self._to
-    elif attribute_name == "state":
-      return self._state
-    elif attribute_name == "number_of_steps":
-      return self._number_of_steps
-    elif attribute_name == "hover":
-      return self._hover
-    elif attribute_name == "left_button_command":
-      return self._left_button_command
-    elif attribute_name == "right_button_command":
-      return self._right_button_command
-    elif attribute_name == "center_button_command":
-      return self._center_button_command
-    elif attribute_name == "orientation":
-      return self._orientation
-
-    else:
-      return super().cget(attribute_name)
-  
-  def get(self, attribute_name: str) -> float:
-    if attribute_name == "left_value":
-      return self._left_output_value
-    elif attribute_name == "center_value":
-      return self._right_output_value
-    elif attribute_name == "right_value":
-      return self._center_output_value
-    
-    else:
-      raise AttributeError(f"{attribute_name} is not attribute of CTkTrimSlider. Cannot retrieve any values.")
-  
-  def set(self, attribute_name, input_value, from_variable_callback=False) -> None:
-    if attribute_name == "left_value":
-      if input_value > self._center_output_value:
-        input_value = self._center_output_value 
-      elif input_value < self._from_:
-        input_value = self._from_
-      
-      self._left_output_value = self._round_to_step_size(input_value)
-      self._lbutton_value = (self._left_output_value - self._from_) / (self._to - self._from_)
-      
-    elif attribute_name == "center_value":
-      if input_value > self._right_output_value:
-        input_value = self._right_output_value 
-      elif input_value < self._left_output_value:
-        input_value = self._left_output_value 
-      
-      self._center_output_value = self._round_to_step_size(input_value)
-      self._cbutton_value = (self._center_output_value - self._from_) / (self._to - self._from_)
-      
-    elif attribute_name == "right_value":
-      if input_value > self._to :
-        input_value = self._to
-      elif input_value < self._center_output_value:
-        input_value = self._center_output_value
-      
-      self._right_output_value = self._round_to_step_size(input_value)
-      self._rbutton_value = (self._right_output_value - self._from_) / (self._to - self._from_)
-      
-    if not from_variable_callback:
-      self._variable_callback_blocked = True
-
-      if attribute_name == "left_value" and self._left_button_var is not None:
-        self._left_button_var.set(self._left_output_value)
-
-      elif attribute_name == "center_value" and self._center_button_var is not None:
-        self._center_button_var.set(self._center_output_value)
-
-      elif attribute_name == "right_value" and self._right_button_var is not None:
-        self._right_button_var.set(self._right_output_value)
-
-      self._variable_callback_blocked = False
-    
-    self._draw(no_color_updates=False)
-
-  def _on_left_button_var_change(self) -> None:
-    if self._variable_callback_blocked:
-      return
-    
-    if self._left_button_var is None:
-      return
-
-    self._variable_callback_blocked = True
-    self.set("left_value", self._left_button_var.get(), from_variable_callback=True)
-    self._variable_callback_blocked = False
-  
-  def _on_center_button_var_change(self) -> None:
-    if self._variable_callback_blocked:
-      return
-
-    if self._center_button_var is None:
-      return
-    
-    self._variable_callback_blocked = True
-    self.set("center_value", self._center_button_var.get(), from_variable_callback=True)
-    self._variable_callback_blocked = False
-  
-  def _on_right_button_var_change(self) -> None:
-    if self._variable_callback_blocked:
-      return
-    
-    if self._right_button_var is None:
-      return
-    
-    self._variable_callback_blocked = True
-    self.set("right_value", self._right_button_var.get(), from_variable_callback=True)
-    self._variable_callback_blocked = False
-
-  def focus(self) -> Any:
-    return self._canvas.focus()
-
-  def focus_set(self) -> Any:
-    return self._canvas.focus_set()
-
-  def focus_force(self) -> Any:
-    return self._canvas.focus_force()
+    return requires_recoloring

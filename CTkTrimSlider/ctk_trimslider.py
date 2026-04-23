@@ -2,7 +2,7 @@
 CTkTrimSlider
 Video trim slider for custom tkinter
 Author: David Gingerich
-Version 1.1.6
+Version 1.0.6
 """
 
 import tkinter
@@ -98,8 +98,9 @@ class CTkTrimSlider(CTkBaseClass):
     self._border_width: int | float = ThemeManager.theme["CTkSlider"]["border_width"] if border_width is None else border_width
     
     # corner radius
-    self._center_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if center_button_corner_radius is None else center_button_corner_radius
-    self._outer_button_corner_radius: int | float = ThemeManager.theme["CTkSlider"]["button_corner_radius"] if outer_button_corner_radius is None else outer_button_corner_radius
+    # fix to use these small values if None due to ThemeManager using erxtremely large values in the JSON which caused rendering issues
+    self._center_button_corner_radius: int | float = 8 if center_button_corner_radius is None else center_button_corner_radius
+    self._outer_button_corner_radius: int | float = 6 if outer_button_corner_radius is None else outer_button_corner_radius
     
     if from_ >= to:
       raise ValueError("from_ value cannot be greater than or equal to to value!")
@@ -353,6 +354,25 @@ class CTkTrimSlider(CTkBaseClass):
                             fill=self._apply_appearance_mode(self._button_color),
                             outline=self._apply_appearance_mode(self._button_color))
 
+  def _get_button_offset_and_range(self):
+    outer_button_length = round(self._apply_widget_scaling(self._outer_button_length))
+    center_button_corner_radius = round(self._apply_widget_scaling(self._center_button_corner_radius) / 2.5)
+
+    # scale proportionally to cross-axis, matching the draw engine
+    if self._orientation == "horizontal":
+      cross_axis = self._apply_widget_scaling(self._current_height)
+      total = self._apply_widget_scaling(self._current_width)
+    else:
+      cross_axis = self._apply_widget_scaling(self._current_width)
+      total = self._apply_widget_scaling(self._current_height)
+    
+    outer_button_length = round(max(outer_button_length, cross_axis * 0.5))
+    center_button_corner_radius = round(max(center_button_corner_radius, cross_axis * 0.35))
+
+    offset = outer_button_length + center_button_corner_radius
+    max_range = total - (offset * 2)
+    return offset, max_range
+
   def _clicked(self, event=0) -> None:
     if self._state != "normal":
       return
@@ -369,11 +389,12 @@ class CTkTrimSlider(CTkBaseClass):
   def _left_button_move_handler(self, event=0) -> None:
     # handles the calculations to move the left button
     move_cbutton = False
+    offset, max_range = self._get_button_offset_and_range()
 
     if self._orientation == "horizontal":
-      self._lbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
+      self._lbutton_value = event.x / max_range
     else:
-      self._lbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
+      self._lbutton_value = 1 - event.y / max_range
     
     if self._lbutton_value < 0:
       self._lbutton_value = 0
@@ -418,11 +439,12 @@ class CTkTrimSlider(CTkBaseClass):
   def _right_button_move_handler(self, event=0) -> None:
     # handles the calculations to move the right button
     move_cbutton = False
-    
+    offset, max_range = self._get_button_offset_and_range()
+
     if self._orientation == "horizontal":
-        self._rbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
+        self._rbutton_value = (event.x - 2 * offset) / max_range
     else:
-      self._rbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
+      self._rbutton_value = 1 - (event.y - 2 * offset) / max_range
 
     if self._rbutton_value >= 1:
         self._rbutton_value = 1
@@ -465,10 +487,12 @@ class CTkTrimSlider(CTkBaseClass):
   
   def _center_button_move_handler(self, event=0) -> None:
     # change the center buttons location on the bar and set output values
+    offset, max_range = self._get_button_offset_and_range()
+
     if self._orientation == "horizontal":
-      self._cbutton_value = self._reverse_widget_scaling(event.x / self._canvas.winfo_width())
+      self._cbutton_value = (event.x - offset) / max_range
     else:
-      self._cbutton_value = 1 - self._reverse_widget_scaling(event.y / self._canvas.winfo_height())
+      self._cbutton_value = 1 - (event.y - offset) / max_range
     
     if self._cbutton_value < self._lbutton_value:
       self._cbutton_value = self._lbutton_value 
