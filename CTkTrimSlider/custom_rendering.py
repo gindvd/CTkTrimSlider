@@ -2,7 +2,7 @@
 CTkTrimSlider
 Video trim slider for custom tkinter
 Author: David Gingerich
-Version 1.1.5
+Version 1.1.6
 """
 
 import tkinter
@@ -14,7 +14,7 @@ from customtkinter.windows.widgets.theme import ThemeManager
 from customtkinter.windows.widgets.core_rendering import CTkCanvas
 from customtkinter.windows.widgets.core_widget_classes import CTkBaseClass
 
-from custom_rendering import CustomDrawEngine
+from CTkTrimSlider.ctk_trimslider import CustomDrawEngine
 
 class CTkTrimSlider(CTkBaseClass):
   
