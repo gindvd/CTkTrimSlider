@@ -2,7 +2,7 @@
 CTkTrimSlider
 Video trim slider for custom tkinter
 Author: David Gingerich
-Version 1.0.6
+Version 1.2.0
 """
 
 import tkinter
