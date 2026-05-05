@@ -6,4 +6,4 @@ Author: David Gingerich
 
 __version__ = '1.2.1'
 
-from CTkTrimSlider.ctk_trimslider import CTkTrimSlider
+from .ctk_trimslider import CTkTrimSlider

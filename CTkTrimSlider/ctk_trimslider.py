@@ -14,7 +14,7 @@ from customtkinter.windows.widgets.theme import ThemeManager
 from customtkinter.windows.widgets.core_rendering import CTkCanvas
 from customtkinter.windows.widgets.core_widget_classes import CTkBaseClass
 
-from CTkTrimSlider.custom_rendering import CustomDrawEngine
+from .custom_rendering import CustomDrawEngine
 
 class CTkTrimSlider(CTkBaseClass):
   
