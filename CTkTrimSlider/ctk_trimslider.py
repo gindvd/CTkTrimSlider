@@ -2,7 +2,7 @@
 CTkTrimSlider
 Video trim slider for custom tkinter
 Author: David Gingerich
-Version 1.2.0
+Version 1.2.1
 """
 
 import tkinter
@@ -78,11 +78,6 @@ class CTkTrimSlider(CTkBaseClass):
       else:
         height = 24
     
-    if outer_button_length is None:
-      self._outer_button_length: int = 12
-    else:
-      self._outer_button_length = outer_button_length
-    
     super().__init__(master=master, bg_color=bg_color, width=width, height=height, **kwargs)
 
     # color
@@ -94,13 +89,14 @@ class CTkTrimSlider(CTkBaseClass):
     self._button_hover_color: str = ThemeManager.theme["CTkSlider"]["button_hover_color"] if button_hover_color is None else self._check_color_type(button_hover_color)
 
     # shape
-    self._corner_radius: int | float = ThemeManager.theme["CTkSlider"]["corner_radius"] if corner_radius is None else corner_radius
-    self._border_width: int | float = ThemeManager.theme["CTkSlider"]["border_width"] if border_width is None else border_width
+    self._corner_radius: int = 8 if corner_radius is None else corner_radius
+    self._border_width: int = 4 if border_width is None else border_width
     
     # corner radius
     # fix to use these small values if None due to ThemeManager using erxtremely large values in the JSON which caused rendering issues
-    self._center_button_corner_radius: int | float = 8 if center_button_corner_radius is None else center_button_corner_radius
-    self._outer_button_corner_radius: int | float = 6 if outer_button_corner_radius is None else outer_button_corner_radius
+    self._center_button_corner_radius: int = 8 if center_button_corner_radius is None else center_button_corner_radius
+    self._outer_button_corner_radius: int = 6 if outer_button_corner_radius is None else outer_button_corner_radius
+    self._outer_button_length: int = 12 if outer_button_length is None else outer_button_length
     
     if from_ >= to:
       raise ValueError("from_ value cannot be greater than or equal to to value!")
@@ -222,20 +218,20 @@ class CTkTrimSlider(CTkBaseClass):
       orientation = "w"
 
     requires_recoloring: bool = self._draw_engine.draw_rounded_slider_with_border_and_3_buttons(
-                                                          width = self._apply_widget_scaling(self._current_width), 
-                                                          height = self._apply_widget_scaling(self._current_height),
-                                                          corner_radius = self._apply_widget_scaling(self._corner_radius),
-                                                          border_width = self._apply_widget_scaling(self._border_width),
-                                                          
-                                                          outer_button_length = self._apply_widget_scaling(self._outer_button_length),
-                                                          outer_button_corner_radius = self._apply_widget_scaling(self._outer_button_corner_radius),
-                                                          center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
+        width = self._apply_widget_scaling(self._current_width), 
+        height = self._apply_widget_scaling(self._current_height),
+        corner_radius = self._apply_widget_scaling(self._corner_radius),
+        border_width = self._apply_widget_scaling(self._border_width),
+        
+        outer_button_length = self._apply_widget_scaling(self._outer_button_length),
+        outer_button_corner_radius = self._apply_widget_scaling(self._outer_button_corner_radius),
+        center_button_corner_radius = self._apply_widget_scaling(self._center_button_corner_radius),
 
-                                                          lbutton_value = self._lbutton_value,
-                                                          rbutton_value = self._rbutton_value,
-                                                          cbutton_value = self._cbutton_value,
-                                                          orientation = orientation
-                                                      )
+        lbutton_value = self._lbutton_value,
+        rbutton_value = self._rbutton_value,
+        cbutton_value = self._cbutton_value,
+        orientation = orientation
+    )
     
     if no_color_updates or requires_recoloring is False:
       return
@@ -630,6 +626,10 @@ class CTkTrimSlider(CTkBaseClass):
     if "orientation" in kwargs:
       self._orientation = kwargs.pop("orientation").lower()
       require_redraw = True
+    
+    if "button_blocking" in kwargs:
+      self._button_blocking = kwargs.pop("button_blocking")
+      require_redraw = True
 
     super().configure(require_redraw=require_redraw, **kwargs)
   
@@ -674,6 +674,8 @@ class CTkTrimSlider(CTkBaseClass):
       return self._center_button_command
     elif attribute_name == "orientation":
       return self._orientation
+    elif attribute_name == "button_blocking":
+      return self._button_blocking
 
     else:
       return super().cget(attribute_name)
@@ -682,9 +684,9 @@ class CTkTrimSlider(CTkBaseClass):
     if attribute_name == "left_value":
       return self._left_output_value
     elif attribute_name == "center_value":
-      return self._right_output_value
-    elif attribute_name == "right_value":
       return self._center_output_value
+    elif attribute_name == "right_value":
+      return self._right_output_value
     
     else:
       raise AttributeError(f"{attribute_name} is not attribute of CTkTrimSlider. Cannot retrieve any values.")
