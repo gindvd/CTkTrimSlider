@@ -2,7 +2,7 @@
 Custom Draw Engine
 Custom draw engine to draw trim slider components on a canvas
 Author: David Gingerich
-Version 1.2.0
+Version 1.2.1
 """
 
 import tkinter
@@ -62,7 +62,7 @@ class CustomDrawEngine(DrawEngine):
     else:
       cross_axis = width
     outer_button_length = round(max(outer_button_length, cross_axis * 0.5))
-    center_button_corner_radius = round(max(center_button_corner_radius, cross_axis * 0.35))
+    center_button_corner_radius = round(max(center_button_corner_radius, cross_axis * 0.25))
 
     # compute corner radius after scaling so it matches the final button length
     outer_button_corner_radius = round(outer_button_length / 2)
