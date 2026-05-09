@@ -2,7 +2,7 @@
 CTkTrimSlider
 Video trim slider for custom tkinter
 Author: David Gingerich
-Version 1.2.1
+Version 2.0.0
 """
 
 import tkinter
@@ -89,13 +89,13 @@ class CTkTrimSlider(CTkBaseClass):
     self._button_hover_color: str = ThemeManager.theme["CTkSlider"]["button_hover_color"] if button_hover_color is None else self._check_color_type(button_hover_color)
 
     # shape
-    self._corner_radius: int = 8 if corner_radius is None else corner_radius
-    self._border_width: int = 4 if border_width is None else border_width
+    self._corner_radius: int = 4 if corner_radius is None else corner_radius
+    self._border_width: int = 8 if border_width is None else border_width
     
     # corner radius
     # fix to use these small values if None due to ThemeManager using erxtremely large values in the JSON which caused rendering issues
     self._center_button_corner_radius: int = 8 if center_button_corner_radius is None else center_button_corner_radius
-    self._outer_button_corner_radius: int = 6 if outer_button_corner_radius is None else outer_button_corner_radius
+    self._outer_button_corner_radius: int = 3 if outer_button_corner_radius is None else outer_button_corner_radius
     self._outer_button_length: int = 12 if outer_button_length is None else outer_button_length
     
     if from_ >= to:
@@ -381,6 +381,8 @@ class CTkTrimSlider(CTkBaseClass):
       self._center_button_move_handler(event)
     elif "right_button_parts" in tags:
       self._right_button_move_handler(event)
+    elif "progress_parts" in tags:
+      self._center_button_move_handler(event)
   
   def _left_button_move_handler(self, event=0) -> None:
     # handles the calculations to move the left button
